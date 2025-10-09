@@ -20,6 +20,7 @@ import core.Settings;
 import core.SettingsError;
 import core.SimClock;
 import core.SimError;
+import core.SimScenario;
 import routing.util.RoutingInfo;
 import util.Tuple;
 
@@ -51,11 +52,23 @@ public abstract class MessageRouter {
 	public static final int Q_MODE_RANDOM = 1;
 	/** Setting value for FIFO queue mode */
 	public static final int Q_MODE_FIFO = 2;
+	/** Setting value for priority FIFO queue mode */
+	public static final int Q_MODE_PROPOSAL_1 = 3;
+	/** Setting value for priority FIFO + hopcount queue mode */
+	public static final int Q_MODE_PROPOSAL_2 = 4;
+	/** Setting value for hopcount + elapsedtime +fifl queue mode */
+	public static final int Q_MODE_HOP_TIME_NOPRIORITY = 5;
 
 	/** Setting string for random queue mode */
 	public static final String STR_Q_MODE_RANDOM = "RANDOM";
 	/** Setting string for FIFO queue mode */
 	public static final String STR_Q_MODE_FIFO = "FIFO";
+	/** Setting string for priority FIFO queue mode */
+	public static final String STR_Q_MODE_PROPOSAL_1 = "PROPOSAL_1";
+	/** Setting string for priority FIFO + hopcount queue mode */
+	public static final String STR_Q_MODE_PROPOSAL_2 = "PROPOSAL_2";
+	/** Setting string for FIFO+hoqcount + elapsed time queue mode */
+	public static final String STR_Q_MODE_HOP_TIME_NOPRIORITY = "HOP_TIME_NOPRIORITY";
 
 	/* Return values when asking to start a transmission:
 	 * RCV_OK (0) means that the host accepts the message and transfer started,
@@ -138,9 +151,15 @@ public abstract class MessageRouter {
 				this.sendQueueMode = Q_MODE_FIFO;
 			} else if (mode.trim().toUpperCase().equals(STR_Q_MODE_RANDOM)){
 				this.sendQueueMode = Q_MODE_RANDOM;
+			} else if (mode.trim().toUpperCase().equals(STR_Q_MODE_PROPOSAL_1)){
+				this.sendQueueMode = Q_MODE_PROPOSAL_1;
+			} else if (mode.trim().toUpperCase().equals(STR_Q_MODE_PROPOSAL_2)){
+				this.sendQueueMode = Q_MODE_PROPOSAL_2;
+			} else if (mode.trim().toUpperCase().equals(STR_Q_MODE_HOP_TIME_NOPRIORITY)) {
+				this.sendQueueMode = Q_MODE_HOP_TIME_NOPRIORITY;
 			} else {
 				this.sendQueueMode = s.getInt(SEND_QUEUE_MODE_S);
-				if (sendQueueMode < 1 || sendQueueMode > 2) {
+				if (sendQueueMode < 1 || sendQueueMode > 5) {
 					throw new SettingsError("Invalid value for " +
 							s.getFullPropertyName(SEND_QUEUE_MODE_S));
 				}
@@ -343,6 +362,9 @@ public abstract class MessageRouter {
 		newMessage.addNodeOnPath(this.host);
 
 		for (MessageListener ml : this.mListeners) {
+		/*	if (from.toString().startsWith("s")) {
+				continue;
+			}*/
 			ml.messageTransferStarted(newMessage, from, getHost());
 		}
 
@@ -521,8 +543,17 @@ public abstract class MessageRouter {
 	 * @param list The list to sort or shuffle
 	 * @return The sorted/shuffled list
 	 */
+	
+	int record_counter = 0;
+
 	@SuppressWarnings(value = "unchecked") /* ugly way to make this generic */
 	protected List sortByQueueMode(List list) {
+
+	/* 	if(record_counter < 10){
+			System.out.println("this is test message : record_counter >>> " + record_counter);
+			record_counter++;
+		}*/
+
 		switch (sendQueueMode) {
 		case Q_MODE_RANDOM:
 			Collections.shuffle(list, new Random(SimClock.getIntTime()));
@@ -557,6 +588,389 @@ public abstract class MessageRouter {
 			});
 			break;
 		/* add more queue modes here */
+		case Q_MODE_PROPOSAL_1:
+		Collections.sort(list,new Comparator() {
+			/** Compares two tuples by their messages' receiving time */
+			public int compare(Object o1, Object o2) {
+				int temp = 0;
+				double diff2;
+				Message m1, m2;
+
+				if (o1 instanceof Tuple) {
+					m1 = ((Tuple<Message, Connection>)o1).getKey();
+					m2 = ((Tuple<Message, Connection>)o2).getKey();
+				}
+				else if (o1 instanceof Message) {
+					m1 = (Message)o1;
+					m2 = (Message)o2;
+				}
+				else {
+					throw new SimError("Invalid type of objects in the list");
+				}
+				if (m1.getId().startsWith("M_H") && m2.getId().startsWith("M_L")) {
+					temp = -1;
+					//System.out.println("M_H " + m1 +"," + m2);
+				}
+				if(m1.getId().startsWith("M_L") && m2.getId().startsWith("M_H")) {
+					temp = 1;
+					//System.out.println("M_L " + m1 +"," + m2);
+				}
+				if (temp == 0) {
+					diff2 = m1.getReceiveTime() - m2.getReceiveTime();
+					//System.out.println("diff " + m1 +"," + m2 + " diff: " + diff2);
+					if (diff2 == 0) {
+						temp = 0;
+					}
+					else{
+						temp = diff2 < 0 ? -1: 1;
+					}
+				}
+				return temp;
+			}
+			});
+			break;
+
+		case Q_MODE_PROPOSAL_2:
+			Collections.sort(list,new Comparator() {
+				// Compares two tuples by their messages' receiving time
+				public int compare(Object o1, Object o2) {
+					//double endtime = 43200; //43200[s] = 12[h] simulation time.
+					double diff;
+					int temp = 0;
+					Message m1, m2;
+
+					/*if (o1 instanceof Tuple) {
+						m1 = ((Tuple<Message, Connection>)o1).getKey();
+					} else if (o1 instanceof Message) {
+						m1 = (Message) o1;
+					} else {
+						throw new SimError("Invalid type of objects in the list (o1)");
+					}
+					if (o2 instanceof Tuple) {
+						m2 = ((Tuple<Message, Connection>)o2).getKey();
+					} else if (o2 instanceof Message) {
+						m2 = (Message) o2;
+					} else {
+						throw new SimError("Invalid type of objects in the list (o2)");
+					}*/
+					if (o1 instanceof Tuple) {
+					m1 = ((Tuple<Message, Connection>)o1).getKey();
+					m2 = ((Tuple<Message, Connection>)o2).getKey();
+					}
+					else if (o1 instanceof Message) {
+						m1 = (Message)o1;
+						m2 = (Message)o2;
+					}
+					else {
+						throw new SimError("Invalid type of objects in the list");
+					}
+					//System.out.println("endtime:" + endtime);
+					//double endtime = m1.getInitTtl() - m1.getTtl();
+					//System.out.println("endtime:" + endtime);
+
+					if (m1.getId().startsWith("M_H") && m2.getId().startsWith("M_L")) {
+						temp = -1;
+						//System.out.println("M_H " + m1 +"," + m2);
+					}
+
+					if(m1.getId().startsWith("M_L") && m2.getId().startsWith("M_H")) {
+						temp = 1;
+						//System.out.println("M_L " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Hp")) && ((m2.getId().startsWith("M_Lp")) || (m2.getId().startsWith("M_Lq")) || (m2.getId().startsWith("M_Lr")))) {
+						temp = -1;
+						//System.out.println("M_Hp " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Hq")) && ((m2.getId().startsWith("M_Lp")) || (m2.getId().startsWith("M_Lq")) || (m2.getId().startsWith("M_Lr")))) {
+						temp = -1;
+						//System.out.println("M_Hq " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Hr")) && ((m2.getId().startsWith("M_Lp")) || (m2.getId().startsWith("M_Lq")) || (m2.getId().startsWith("M_Lr")))) {
+						temp = -1;
+						//System.out.println("M_Hr " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Lp")) && ((m2.getId().startsWith("M_Hp")) || (m2.getId().startsWith("M_Hq")) || (m2.getId().startsWith("M_Hr")))) {
+						temp = 1;
+						//System.out.println("M_Lp " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Lq")) && ((m2.getId().startsWith("M_Hp")) || (m2.getId().startsWith("M_Hq")) || (m2.getId().startsWith("M_Hr")))) {
+						temp = 1;
+						//System.out.println("M_Lq " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Lr")) && ((m2.getId().startsWith("M_Hp")) || (m2.getId().startsWith("M_Hq")) || (m2.getId().startsWith("M_Hr")))) {
+						temp = 1;
+						//System.out.println("M_Lr " + m1 +"," + m2);
+					}
+
+					//keikazikannyuusenn
+					/*if (temp == 0) {
+						if (m1.getTransmissionNumber() == 0 && m2.getTransmissionNumber() >= 1) {
+							temp = -1;
+						} else if (m2.getTransmissionNumber() == 0 && m1.getTransmissionNumber() >= 1){
+							temp = 1;
+						} else {
+							double elpasedtime_m1 = m1.getInitTtl() - m1.getTtl();
+							double elpasedtime_m2 = m2.getInitTtl() - m2.getTtl();
+							double elapsed_comparetor = elpasedtime_m1 - elpasedtime_m2;
+
+							if (elapsed_comparetor != 0) {
+								temp = (elapsed_comparetor < 0) ? -1:1;
+							} else{
+								double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+								//double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
+								if (elpased_hopcount != 0){
+									temp = (elpased_hopcount < 0) ? -1:1;
+								} else{
+									double r1 = m1.getReceiveTime();
+									double r2 = m2.getReceiveTime();
+									if (Double.isNaN(r1)){
+										r1 = Double.POSITIVE_INFINITY;
+									}
+									if (Double.isNaN(r2)){
+										r2 = Double.POSITIVE_INFINITY;
+									}
+
+									diff = r1 - r2;
+									if (diff != 0){
+										temp = (diff < 0) ? -1:1;
+									} else{
+										temp = m1.getId().compareTo(m2.getId());
+									}
+								}
+							}
+						}
+					}*/
+
+					//sousinnkaisuuyuusenn
+					if (temp == 0) {
+						if (m1.getTransmissionNumber() == 0 && m2.getTransmissionNumber() >= 1) {
+							temp = -1;
+						} else if (m2.getTransmissionNumber() == 0 && m1.getTransmissionNumber() >= 1){
+							temp = 1;
+						} else {
+							//double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+							double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
+
+							if (elpased_hopcount != 0) {
+								temp = (elpased_hopcount < 0) ? -1:1;
+							} else{
+								double elpasedtime_m1 = m1.getInitTtl() - m1.getTtl();
+								double elpasedtime_m2 = m2.getInitTtl() - m2.getTtl();
+								double elapsed_comparetor = elpasedtime_m1 - elpasedtime_m2;
+								
+								if (elapsed_comparetor != 0){
+									temp = (elapsed_comparetor < 0) ? -1:1;
+								} else{
+									double r1 = m1.getReceiveTime();
+									double r2 = m2.getReceiveTime();
+									if (Double.isNaN(r1)){
+										r1 = Double.POSITIVE_INFINITY;
+									}
+									if (Double.isNaN(r2)){
+										r2 = Double.POSITIVE_INFINITY;
+									}
+
+									diff = r1 - r2;
+									if (diff != 0){
+										temp = (diff < 0) ? -1:1;
+									} else{
+										temp = m1.getId().compareTo(m2.getId());
+									}
+								}
+							}
+						}
+					}
+					return temp;
+				}
+			});
+			break;
+		/*
+		case Q_MODE_PROPOSAL_2:
+			Collections.sort(list,new Comparator() {
+				/** Compares two tuples by their messages' receiving time
+				public int compare(Object o1, Object o2) {
+					//double endtime = 43200; //43200[s] = 12[h] simulation time.
+					double diff;
+					int temp = 0;
+					Message m1, m2;
+				//	SimScenario SimScenario;
+				//	double end_time = SimScenario.getEndTime();
+				//	SimScenario scenario = SimScenario.getInstance();
+				//	double endtime = scenario.getEndTime();
+
+					if (o1 instanceof Tuple) {
+						m1 = ((Tuple<Message, Connection>)o1).getKey();
+						m2 = ((Tuple<Message, Connection>)o2).getKey();
+					}
+					else if (o1 instanceof Message) {
+						m1 = (Message)o1;
+						m2 = (Message)o2;
+					}
+					else {
+						throw new SimError("Invalid type of objects in " +
+								"the list");
+					}
+					//System.out.println("endtime:" + endtime);
+					//double endtime = m1.getInitTtl() - m1.getTtl();
+					//System.out.println("endtime:" + endtime);
+
+					if (m1.getId().startsWith("M_H") && m2.getId().startsWith("M_L")) {
+						temp = -1;
+						//System.out.println("M_H " + m1 +"," + m2);
+					}
+
+					if(m1.getId().startsWith("M_L") && m2.getId().startsWith("M_H")) {
+						temp = 1;
+						//System.out.println("M_L " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Hp")) && ((m2.getId().startsWith("M_Lp")) || (m2.getId().startsWith("M_Lq")) || (m2.getId().startsWith("M_Lr")))) {
+						temp = -1;
+						//System.out.println("M_Hp " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Hq")) && ((m2.getId().startsWith("M_Lp")) || (m2.getId().startsWith("M_Lq")) || (m2.getId().startsWith("M_Lr")))) {
+						temp = -1;
+						//System.out.println("M_Hq " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Hr")) && ((m2.getId().startsWith("M_Lp")) || (m2.getId().startsWith("M_Lq")) || (m2.getId().startsWith("M_Lr")))) {
+						temp = -1;
+						//System.out.println("M_Hr " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Lp")) && ((m2.getId().startsWith("M_Hp")) || (m2.getId().startsWith("M_Hq")) || (m2.getId().startsWith("M_Hr")))) {
+						temp = 1;
+						//System.out.println("M_Lp " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Lq")) && ((m2.getId().startsWith("M_Hp")) || (m2.getId().startsWith("M_Hq")) || (m2.getId().startsWith("M_Hr")))) {
+						temp = 1;
+						//System.out.println("M_Lq " + m1 +"," + m2);
+					}
+
+					if ((m1.getId().startsWith("M_Lr")) && ((m2.getId().startsWith("M_Hp")) || (m2.getId().startsWith("M_Hq")) || (m2.getId().startsWith("M_Hr")))) {
+						temp = 1;
+						//System.out.println("M_Lr " + m1 +"," + m2);
+					}
+
+					if (temp == 0) {
+							if (m1.getHopCount() == 0 && m2.getHopCount() >= 1) {
+								temp = -1;
+							} else if (m2.getHopCount() == 0 && m1.getHopCount() >= 1){
+								temp = 1;
+							} else {
+								double elpasedtime_m1 = m1.getInitTtl() - m1.getTtl();
+								double elpasedtime_m2 = m2.getInitTtl() - m2.getTtl();
+								double elapsed_comparetor = elpasedtime_m1 - elpasedtime_m2;
+								double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+								//double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
+								int judge = 0;
+
+								if (elapsed_comparetor == 0) {
+									judge = 0;
+								} else {
+									judge = elapsed_comparetor < 0 ? -1:1;
+								}
+
+								if (elpased_hopcount == 0) {
+									judge += 0;
+								} else {
+									judge += elpased_hopcount < 0 ? -1:1;
+								}
+
+								if (judge == 0) {
+									diff = m1.getReceiveTime() - m2.getReceiveTime();
+									if (diff == 0) {
+										temp = 0;
+									} else {
+										temp = diff < 0 ? -1:1;
+									}
+								} else {
+									temp = judge < 0 ? -1:1;
+								}
+							}
+							/*
+							double elapsed_time_m1 = m1.getInitTtl() - m1.getTtl();
+							double elpasedtime_m2 = m2.getInitTtl() - m2.getTtl();
+							double comparator_m1 = elapsed_time_m1 + m1.getHopCount();
+							double comparator_m2 = elpasedtime_m2 + m2.getHopCount();
+							diff = comparator_m1 - comparator_m2;
+							if (diff == 0) {
+								diff = m1.getReceiveTime() - m2.getReceiveTime();
+								if (diff == 0) {
+									temp = 0;
+								} else {
+									temp = diff < 0 ? -1:1;
+								}
+							} else {
+								temp = diff < 0 ? -1:1;
+							}
+						}
+					return temp;
+				}
+			});
+			break;
+			*/
+		case Q_MODE_HOP_TIME_NOPRIORITY:
+			Collections.sort(list,new Comparator() {
+				/** Compares two tuples by their messages' receiving time */
+				public int compare(Object o1, Object o2) {
+					double diff;
+					double temp;
+					Message m1, m2;
+
+					if (o1 instanceof Tuple) {
+						m1 = ((Tuple<Message, Connection>)o1).getKey();
+						m2 = ((Tuple<Message, Connection>)o2).getKey();
+					} else if (o1 instanceof Message) {
+						m1 = (Message)o1;
+						m2 = (Message)o2;
+					} else {
+						throw new SimError("Invalid type of objects in " + "the list");
+					}
+
+					if (m1.getTransmissionNumber() == 0 && m2.getTransmissionNumber() >= 1) {
+						return -1;
+					} else {
+						int elapsed_time_m1 = (int)((m1.getInitTtl() - m1.getTtl())/3600);
+						int elapsed_time_m2 = (int)((m2.getInitTtl() - m2.getTtl())/3600);
+						int elapsed_comparetor = elapsed_time_m1 -elapsed_time_m2;
+						double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+						int judge = 0;
+						if (elapsed_comparetor == 0) {
+							judge = 0;
+						} else {
+							judge = elapsed_comparetor < 0 ? -1:1;
+						}
+
+						if (elpased_hopcount == 0) {
+							judge += 0;
+						} else {
+							judge += elpased_hopcount < 0 ? -1:1;
+						}
+
+						if (judge == 0) {
+							diff = m1.getReceiveTime() - m2.getReceiveTime();
+							if (diff == 0) {
+								temp = 0;
+							} else {
+								temp = diff < 0 ? -1:1;
+							}
+						} else {
+							temp = judge < 0 ? -1:1;
+						}
+						return (int)temp;
+					}
+				}
+			});
+		break;
 		default:
 			throw new SimError("Unknown queue mode " + sendQueueMode);
 		}
@@ -588,6 +1002,231 @@ public abstract class MessageRouter {
 			}
 			return (diff < 0 ? -1 : 1);
 		/* add more queue modes here */
+		case Q_MODE_PROPOSAL_1:
+			int temp = 0;
+			if (m1.getId().startsWith("M_H") && m2.getId().startsWith("M_L")) {
+				temp = -1;
+			}
+			if (m1.getId().startsWith("M_L") && m2.getId().startsWith("M_H")) {
+				temp = 1;
+			}
+			if(temp == 0){
+				double diff2 = m1.getReceiveTime() - m2.getReceiveTime();
+				if (diff2 == 0) {
+					temp = 0;
+				}
+				else{
+					temp = diff2 < 0 ? -1:1;
+				}
+			}
+			return temp;
+
+		case Q_MODE_PROPOSAL_2:
+			double temp2 = 0;
+			if (m1.getId().startsWith("M_H") && m2.getId().startsWith("M_L")) {
+				temp2 = -1;
+			}
+			if (m1.getId().startsWith("M_L") && m2.getId().startsWith("M_H")) {
+				temp2 = 1;
+			}
+			if ((m1.getId().startsWith("M_Hp")) && ((m2.getId().startsWith("M_Lp")) || (m2.getId().startsWith("M_Lq")) || (m2.getId().startsWith("M_Lr")))) {
+				temp2 = -1;
+			}
+
+			if ((m1.getId().startsWith("M_Hq")) && ((m2.getId().startsWith("M_Lp")) || (m2.getId().startsWith("M_Lq")) || (m2.getId().startsWith("M_Lr")))) {
+				temp2 = -1;
+			}
+
+			if ((m1.getId().startsWith("M_Hr")) && ((m2.getId().startsWith("M_Lp")) || (m2.getId().startsWith("M_Lq")) || (m2.getId().startsWith("M_Lr")))) {
+				temp2 = -1;
+			}
+			if ((m1.getId().startsWith("M_Lp")) && ((m2.getId().startsWith("M_Hp")) || (m2.getId().startsWith("M_Hq")) || (m2.getId().startsWith("M_Hr")))) {
+				temp2 = 1;
+			}
+
+			if ((m1.getId().startsWith("M_Lq")) && ((m2.getId().startsWith("M_Hp")) || (m2.getId().startsWith("M_Hq")) || (m2.getId().startsWith("M_Hr")))) {
+				temp2 = 1;
+			}
+
+			if ((m1.getId().startsWith("M_Lr")) && ((m2.getId().startsWith("M_Hp")) || (m2.getId().startsWith("M_Hq")) || (m2.getId().startsWith("M_Hr")))) {
+				temp2 = 1;
+			}
+			//keikazikannyuusenn
+			/*if (temp2 == 0) {
+				if (m1.getTransmissionNumber() == 0 && m2.getTransmissionNumber() >= 1) {
+					temp2 = -1;
+				} else if (m2.getTransmissionNumber() == 0 && m1.getTransmissionNumber() >= 1){
+					temp2 = 1;
+				} else {
+					double elpasedtime_m1 = m1.getInitTtl() - m1.getTtl();
+					double elpasedtime_m2 = m2.getInitTtl() - m2.getTtl();
+					double elapsed_comparetor = elpasedtime_m1 - elpasedtime_m2;
+
+					if (elapsed_comparetor != 0) {
+						temp2 = (elapsed_comparetor < 0) ? -1:1;
+					} else{
+						double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+						//double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
+						if (elpased_hopcount != 0){
+							temp2 = (elpased_hopcount < 0) ? -1:1;
+						} else{
+							double r1 = m1.getReceiveTime();
+							double r2 = m2.getReceiveTime();
+							if (Double.isNaN(r1)){
+								r1 = Double.POSITIVE_INFINITY;
+							}
+							if (Double.isNaN(r2)){
+								r2 = Double.POSITIVE_INFINITY;
+							}
+
+							diff = r1 - r2;
+							if (diff != 0){
+								temp2 = (diff < 0) ? -1:1;
+							} else{
+								temp2 = m1.getId().compareTo(m2.getId());
+							}
+						}
+					}
+				}
+			}*/
+
+			//sousinnkaisuuyuusenn
+			if (temp2 == 0) {
+				if (m1.getTransmissionNumber() == 0 && m2.getTransmissionNumber() >= 1) {
+					temp2 = -1;
+				} else if (m2.getTransmissionNumber() == 0 && m1.getTransmissionNumber() >= 1){
+					temp2 = 1;
+				} else {
+					//double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+					double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
+
+					if (elpased_hopcount != 0) {
+						temp2 = (elpased_hopcount < 0) ? -1:1;
+					} else{
+						double elpasedtime_m1 = m1.getInitTtl() - m1.getTtl();
+						double elpasedtime_m2 = m2.getInitTtl() - m2.getTtl();
+						double elapsed_comparetor = elpasedtime_m1 - elpasedtime_m2;
+						
+						if (elapsed_comparetor != 0){
+							temp2 = (elapsed_comparetor < 0) ? -1:1;
+						} else{
+							double r1 = m1.getReceiveTime();
+							double r2 = m2.getReceiveTime();
+							if (Double.isNaN(r1)){
+								r1 = Double.POSITIVE_INFINITY;
+							}
+							if (Double.isNaN(r2)){
+								r2 = Double.POSITIVE_INFINITY;
+							}
+
+							diff = r1 - r2;
+							if (diff != 0){
+								temp2 = (diff < 0) ? -1:1;
+							} else{
+								temp2 = m1.getId().compareTo(m2.getId());
+							}
+						}
+					}
+				}
+			}
+			/*if (temp2 == 0) {
+				if (m1.getTransmissionNumber() == 0 && m2.getTransmissionNumber() >= 1) {
+					temp2 = -1;
+				}
+				else if (m2.getTransmissionNumber() == 0 && m1.getTransmissionNumber() >= 1) {
+					temp2 = 1;
+				}
+				else {
+					double elpasedtime_m1 = m1.getInitTtl() - m1.getTtl();
+					double elpasedtime_m2 = m2.getInitTtl() - m2.getTtl();
+					double elapsed_comparetor = elpasedtime_m1 - elpasedtime_m2;
+					double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+					//double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
+					int judge = 0;
+
+					if (elapsed_comparetor == 0) {
+						judge = 0;
+					} else {
+						judge = elapsed_comparetor < 0 ? -1:1;
+					}
+
+					if (elpased_hopcount == 0) {
+						judge += 0;
+					} else {
+						judge += elpased_hopcount < 0 ? -1:1;
+					}
+
+					if (judge == 0) {
+						diff = m1.getReceiveTime() - m2.getReceiveTime();
+						if (diff == 0) {
+							temp = 0;
+						} else {
+							temp = diff < 0 ? -1:1;
+						}
+					} else {
+						temp = judge < 0 ? -1:1;
+					}
+				}
+			}*/
+			return (int)temp2;
+		
+
+		case Q_MODE_HOP_TIME_NOPRIORITY:
+			double temp3 = 0;
+			double diff4 = 0;
+			if (m1.getHopCount() == 0 && m2.getHopCount() >= 1) {
+				return -1;
+			} else {
+				if (m1.getId().startsWith("M_H") && m2.getId().startsWith("M_L")) {
+					temp3 = -1;
+				}
+
+				if(m1.getId().startsWith("M_L") && m2.getId().startsWith("M_H")) {
+					temp3 = 1;
+				}
+
+				if (temp3 == 0) {
+						if (m1.getHopCount() == 0 && m2.getHopCount() >= 1) {
+							temp3 = -1;
+						} else if (m2.getHopCount() == 0 && m1.getHopCount() >= 1){
+							temp3 = 1;
+						} else {
+							double elpasedtime_m1 = m1.getInitTtl() - m1.getTtl();
+							double elpasedtime_m2 = m2.getInitTtl() - m2.getTtl();
+							double elapsed_comparetor = elpasedtime_m1 - elpasedtime_m2;
+							double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+							//double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
+							int judge = 0;
+
+							if (elapsed_comparetor == 0) {
+								judge = 0;
+							} else {
+								judge = elapsed_comparetor < 0 ? -1:1;
+							}
+
+							if (elpased_hopcount == 0) {
+								judge += 0;
+							} else {
+								judge += elpased_hopcount < 0 ? -1:1;
+							}
+
+							if (judge == 0) {
+								diff4 = m1.getReceiveTime() - m2.getReceiveTime();
+								if (diff4 == 0) {
+									temp3 = 0;
+								} else {
+									temp3 = diff4 < 0 ? -1:1;
+								}
+							} else {
+								temp3 = judge < 0 ? -1:1;
+							}
+						}
+						
+					}
+				return (int)temp3;
+
+			}
+
 		default:
 			throw new SimError("Unknown queue mode " + sendQueueMode);
 		}

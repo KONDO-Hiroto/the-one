@@ -113,6 +113,9 @@ public abstract class ActiveRouter extends MessageRouter {
 		for (Message m : temp) {
 			if (other == m.getTo()) {
 				if (startTransfer(m, con) == RCV_OK) {
+					/*if (con.getFromName().toString().startsWith("s")) {
+						continue;
+					}*/
 					return true;
 				}
 			}
@@ -176,6 +179,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 */
 	protected int startTransfer(Message m, Connection con) {
 		int retVal;
+		int retVal2 = 0;
 
 		if (!con.isReadyForTransfer()) {
 			return TRY_LATER_BUSY;
@@ -185,16 +189,30 @@ public abstract class ActiveRouter extends MessageRouter {
 				con.getOtherNode(getHost()), con, m)) {
 			return MessageRouter.DENIED_POLICY;
 		}
-
 		retVal = con.startTransfer(getHost(), m);
-		if (retVal == RCV_OK) { // started transfer
-			addToSendingConnections(con);
-		}
-		else if (deleteDelivered && retVal == DENIED_OLD &&
-				m.getTo() == con.getOtherNode(this.getHost())) {
+		//System.out.println("connection: " + con + "messages" + m);
+		//System.out.println("from: " + con.getToName() + ", to: " + con.getFromName());
+		//System.out.println("gettohost: " + con.getOtherNode(getHost()));
+
+			if (retVal == RCV_OK) { // started transfer
+			//	System.out.println("getHost() : " + getHost());
+				//System.out.println("con : " + con + "hopcount : " + m.getHopCount());
+				addToSendingConnections(con,m);
+			}
+			else if(retVal == DENIED_OLD){
+				//System.out.println("messageslist" + con.getFromName().getMessageCollection() + "\n");
+				//System.out.println("\n" + "------------------------------");
+				//System.out.println("con: " + con);
+				//System.out.println("from: " + con.getToName());
+				//System.out.println("to: " + con.getFromName());
+				//System.out.println("messages" + m + "\n");
+				m.halveTransmissonProbability();
+			}
+			else if (deleteDelivered && retVal == DENIED_OLD &&
+			m.getTo() == con.getOtherNode(this.getHost())) {
 			/* final recipient has already received the msg -> delete it */
 			this.deleteMessage(m.getId(), false);
-		}
+			}
 
 		return retVal;
 	}
@@ -254,6 +272,9 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (!makeRoomForMessage(m.getSize())) {
 			return DENIED_NO_SPACE; // couldn't fit into buffer -> reject
 		}
+		if (getHost().toString().startsWith("s")){
+			return DENIED_UNSPECIFIED;
+		}
 
 		return RCV_OK;
 	}
@@ -288,14 +309,31 @@ public abstract class ActiveRouter extends MessageRouter {
 	}
 
 	/**
-	 * Drops messages whose TTL is less than zero.
+	 * This is proposal method
 	 */
+
+	protected void DropFakeMessages(){
+		Message[] messages = getMessageCollection().toArray(new Message[0]);
+		for (int k = 0; k < messages.length; k++){
+			if (messages[k].getId().startsWith("M_H_F") && messages[k].getTo().toString().startsWith("I")){
+				System.out.println("Message ID : " + messages[k].getId() + "	FROM ID: " + messages[k].getTo());
+				System.out.println("Destination ID : " + messages[k].getFrom().toString());
+				deleteMessage(messages[k].getId(), true);
+			}
+		}
+	}
+
+
+
+
+	
 	protected void dropExpiredMessages() {
 		Message[] messages = getMessageCollection().toArray(new Message[0]);
 		for (int i=0; i<messages.length; i++) {
 			int ttl = messages[i].getTtl();
 			if (ttl <= 0) {
 				deleteMessage(messages[i].getId(), true);
+				System.out.println("this is test log\n");
 			}
 		}
 	}
@@ -359,6 +397,9 @@ public abstract class ActiveRouter extends MessageRouter {
 			for (Connection con : getConnections()) {
 				DTNHost to = con.getOtherNode(getHost());
 				if (m.getTo() == to) {
+				/*	if (con.getFromName().toString().startsWith("s")) {
+						continue;
+					}*/
 					forTuples.add(new Tuple<Message, Connection>(m,con));
 				}
 			}
@@ -385,6 +426,9 @@ public abstract class ActiveRouter extends MessageRouter {
 			Message m = t.getKey();
 			Connection con = t.getValue();
 			if (startTransfer(m, con) == RCV_OK) {
+			/*	if (con.getFromName().toString().startsWith("s")) {
+						continue;
+					}*/
 				return t;
 			}
 		}
@@ -457,6 +501,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			new ArrayList<Message>(this.getMessageCollection());
 		this.sortByQueueMode(messages);
 
+		//System.out.println(messages);
 		return tryMessagesToConnections(messages, connections);
 	}
 
@@ -478,8 +523,8 @@ public abstract class ActiveRouter extends MessageRouter {
 		@SuppressWarnings(value = "unchecked")
 		Tuple<Message, Connection> t =
 			tryMessagesForConnected(sortByQueueMode(getMessagesForConnected()));
-
 		if (t != null) {
+			//System.out.println("aaa " + t.getValue());
 			return t.getValue(); // started transfer
 		}
 
@@ -514,8 +559,41 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @see #update()
 	 * @param con The connection to add
 	 */
-	protected void addToSendingConnections(Connection con) {
-		this.sendingConnections.add(con);
+	protected void addToSendingConnections(Connection con, Message m) {
+		int probability = (int)(Math.random()*100 + 1);	//dice(1-100)
+		
+		/**
+		 * The transmission probability is determined.
+		 */
+		if (m.getTransmissonProbability() != 100) {
+			m.increaseTransmissionProbability(40);	//Increase transmission probability by 40%
+			if (m.getTransmissonProbability() > 100) {
+				m.probabilityMaximize();
+			}
+		}
+
+		/**
+		 * Determine the transmission.
+		 */
+		//System.out.println("fuga.");
+		//System.out.println(con);
+		//System.out.println("hops:" + m.getTransmissionNumber());
+		//System.out.println("probability:" + probability);
+		//System.out.println("con:" + con);
+		//System.out.println("before: sousinkakuritu " + m.getTransmissonProbability() + "sousinkaisuu: " + m.getTransmissionNumber());
+		if (probability <= m.getTransmissonProbability()) {
+			m.increasesTransmissionNumber();
+			this.sendingConnections.add(con);
+		}
+		//System.out.println("after: sousinkakuritu " + m.getTransmissonProbability() + "sousinkaisuu: " + m.getTransmissionNumber());
+		//System.out.println();
+
+		//	System.out.println(m.getTransmisson_probability());
+	//	m.halveTransmisson_probability();
+	//	System.out.println(m.getTransmisson_probability());
+	//	this.sendingConnections.add(con);
+		//System.out.println();
+		//System.out.println(con);
 	}
 
 	/**
@@ -581,6 +659,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	public void update() {
 		super.update();
 
+		DropFakeMessages();
+
 		/* in theory we can have multiple sending connections even though
 		  currently all routers allow only one concurrent sending connection */
 		for (int i=0; i<this.sendingConnections.size(); ) {
@@ -589,6 +669,7 @@ public abstract class ActiveRouter extends MessageRouter {
 
 			/* finalize ready transfers */
 			if (con.isMessageTransferred()) {
+				//System.out.println("We are all men." + con.isMessageTransferred());
 				if (con.getMessage() != null) {
 					transferDone(con);
 					con.finalizeTransfer();
@@ -625,10 +706,10 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		if (energy != null) {
-			/* TODO: add support for other interfaces */
 			NetworkInterface iface = getHost().getInterface(1);
 			energy.update(iface, getHost().getComBus());
 		}
+
 	}
 
 	/**
