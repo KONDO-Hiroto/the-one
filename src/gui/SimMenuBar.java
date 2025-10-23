@@ -30,7 +30,6 @@ import core.SettingsError;
  * Menu bar of the simulator GUI
  *
  */
-@SuppressWarnings("serial")
 public class SimMenuBar extends JMenuBar implements ActionListener {
 	/** title of the about window */
 	public static final String ABOUT_TITLE = "about ONE";

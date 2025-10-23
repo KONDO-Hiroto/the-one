@@ -4,6 +4,7 @@
  */
 package core;
 
+import java.util.*;
 import routing.MessageRouter;
 
 /**

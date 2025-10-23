@@ -21,6 +21,10 @@ import core.MessageListener;
  * overhead ratio if no messages were delivered) "NaN" is reported for
  * double values and zero for integer median(s).
  */
+
+/**
+ * this src is create & write the default result report.
+ */ 
 public class MessageStatsReport extends Report implements MessageListener {
 	private Map<String, Double> creationTimes;
 	private List<Double> latencies;
@@ -155,6 +159,8 @@ public class MessageStatsReport extends Report implements MessageListener {
 				this.nrofResponseReqCreated;
 		}
 
+		long date = System.currentTimeMillis();
+
 		String statsText = "created: " + this.nrofCreated +
 			"\nstarted: " + this.nrofStarted +
 			"\nrelayed: " + this.nrofRelayed +
@@ -172,7 +178,8 @@ public class MessageStatsReport extends Report implements MessageListener {
 			"\nbuffertime_avg: " + getAverage(this.msgBufferTime) +
 			"\nbuffertime_med: " + getMedian(this.msgBufferTime) +
 			"\nrtt_avg: " + getAverage(this.rtt) +
-			"\nrtt_med: " + getMedian(this.rtt)
+			"\nrtt_med: " + getMedian(this.rtt)+
+			"\n\nThis is a test 2023.07.14" + date
 			;
 
 		write(statsText);

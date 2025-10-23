@@ -30,7 +30,6 @@ import core.World;
  * The canvas where node graphics and message visualizations are drawn.
  *
  */
-@SuppressWarnings("serial")
 public class PlayField extends JPanel {
 	public static final int PLAYFIELD_OFFSET = 10;
 

@@ -16,6 +16,7 @@ import core.Settings;
  * of each other) distribution. Report file contains the count of connections
  * that lasted for certain amount of time. Syntax:<br>
  * <code>time nrofContacts</code>
+ * (write to default result file)
  */
 public class ContactTimesReport extends Report implements ConnectionListener {
 	protected HashMap<ConnectionInfo, ConnectionInfo> connections;

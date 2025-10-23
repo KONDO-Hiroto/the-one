@@ -14,6 +14,7 @@ package report;
  * The occupancy is calculated as an instantaneous snapshot every nth second
  * as defined by the <code>occupancyInterval</code> setting, not as an
  * average over time.
+ * (write to default result file)
  * </p>
  *
  * @author	teemuk

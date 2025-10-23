@@ -37,6 +37,34 @@ public abstract class Connection {
 		this.toInterface = toInterface;
 		this.isUp = true;
 		this.bytesTransferred = 0;
+
+		/* Prevent drones from communicating with each other */
+		if(fromNode.toString().equals("Do150") && ((toNode.toString().equals("Do151")) || (toNode.toString().equals("Do152")))){
+			System.out.println("aiueo");
+			this.isUp = false;
+		}
+
+		if(fromNode.toString().equals("Do151") && ((toNode.toString().equals("Do150")) || (toNode.toString().equals("Do152")))){
+			System.out.println("aiueo");
+			this.isUp = false;
+		}
+
+		if(fromNode.toString().equals("Do152") && ((toNode.toString().equals("Do150")) || (toNode.toString().equals("Do151")))){
+			System.out.println("aiueo");
+			this.isUp = false;
+		}
+
+		else{
+			this.isUp = true;
+		}
+	}
+	
+	public DTNHost getToName(){
+		return this.toNode;
+	}
+
+	public DTNHost getFromName() {
+		return this.fromNode;
 	}
 
 
@@ -224,6 +252,9 @@ public abstract class Connection {
 		(isUp() ? "up":"down") +
 		(isTransferring() ? " transferring " + this.msgOnFly  +
 				" from " + this.msgFromNode : "");
+	}
+
+	public void getOtherNode(boolean contains) {
 	}
 
 }

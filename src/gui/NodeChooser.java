@@ -28,7 +28,6 @@ import core.Settings;
 /**
  * Node chooser panel
  */
-@SuppressWarnings("serial")
 public class NodeChooser extends JPanel implements ActionListener {
 	private DTNSimGUI gui;
 	/** the maximum number of allNodes to show in the list per page */

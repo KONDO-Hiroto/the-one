@@ -40,6 +40,8 @@ public class Message implements Comparable<Message> {
 	private int responseSize;
 	/** if this message is a response message, this is set to the request msg*/
 	private Message requestMsg;
+	/** Count of the number of transmissions.*/
+	private int transmissionNumber;
 
 	/** Container for generic message properties. Note that all values
 	 * stored in the properties should be immutable because only a shallow
@@ -48,6 +50,11 @@ public class Message implements Comparable<Message> {
 
 	/** Application ID of the application that created the message */
 	private String	appID;
+
+	/** Initial message transmission probability*/
+	private int init_transmission_probability;
+	/** Message transmission probability*/
+	private int transmission_probability;
 
 	static {
 		reset();
@@ -77,6 +84,9 @@ public class Message implements Comparable<Message> {
 		this.requestMsg = null;
 		this.properties = null;
 		this.appID = null;
+		this.init_transmission_probability = 100;
+		this.transmission_probability = 100;
+		this.transmissionNumber = 0;
 
 		Message.nextUniqueId++;
 		addNodeOnPath(from);
@@ -145,6 +155,10 @@ public class Message implements Comparable<Message> {
 	 */
 	public int getHopCount() {
 		return this.path.size() -1;
+	}
+
+	public double getInitTtl(){
+		return this.initTtl;
 	}
 
 	/**
@@ -248,6 +262,70 @@ public class Message implements Comparable<Message> {
 	public String toString () {
 		return id;
 	}
+
+	/**
+	 * @return Initial value of the transmission probability.
+	 */
+	public int getInittransmissonProbability(){
+		return init_transmission_probability;
+	}
+
+	/**
+	 * @return value of the transmission probability.
+	 */
+	public int getTransmissonProbability(){
+		return transmission_probability;
+	}
+
+	/**
+	 * @return half the transmission probability.
+	 */
+	public int halveTransmissonProbability(){
+		return this.transmission_probability /= 2;
+	}
+
+	/**
+	 * @param increase_number value that increases the transmission probability.
+	 * @return Increased value of the transmission probability.
+	 */
+
+	 public int increaseTransmissionProbability(int increase_number) {
+		 return this.transmission_probability += increase_number;
+	 }
+
+	 /**
+	  * 
+	  * @param Set transmission probability to 100%.
+	  */
+	public int probabilityMaximize(){
+		return this.transmission_probability = 100;
+	}
+
+	/**
+	 * 
+	 * @return Gets the number of transmissions.
+	 */
+	public int getTransmissionNumber() {
+		return transmissionNumber;
+	}
+
+	/**
+	 * 
+	 * @return Increase the number of transmissions.
+	 */
+
+	public int increasesTransmissionNumber() {
+		return this.transmissionNumber += 1;
+	}
+
+	/**
+	 * 
+	 * @param Decrease the number of transmissions.
+	 */
+
+	 public int decreasesTransmissionNumber() {
+		 return this.transmissionNumber -= 1;
+	 }
 
 	/**
 	 * Deep copies message data from other message. If new fields are
@@ -359,5 +437,4 @@ public class Message implements Comparable<Message> {
 	public void setAppID(String appID) {
 		this.appID = appID;
 	}
-
 }

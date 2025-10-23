@@ -26,7 +26,6 @@ import core.SimClock;
 /**
  * A window for displaying routing information
  */
-@SuppressWarnings("serial")
 public class RoutingInfoWindow extends JFrame implements ActionListener {
 	private DTNHost host;
 	private JButton refreshButton;
