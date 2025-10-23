@@ -39,7 +39,7 @@ public abstract class Connection {
 		this.bytesTransferred = 0;
 
 		/* Prevent drones from communicating with each other */
-		if(fromNode.toString().equals("Do150") && ((toNode.toString().equals("Do151")) || (toNode.toString().equals("Do152")))){
+		/*if(fromNode.toString().equals("Do150") && ((toNode.toString().equals("Do151")) || (toNode.toString().equals("Do152")))){
 			System.out.println("aiueo");
 			this.isUp = false;
 		}
@@ -66,8 +66,8 @@ public abstract class Connection {
 	public DTNHost getFromName() {
 		return this.fromNode;
 	}
-
-
+	*/
+	
 	/**
 	 * Returns true if the connection is up
 	 * @return state of the connection
