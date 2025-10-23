@@ -754,8 +754,8 @@ public abstract class MessageRouter {
 						} else if (m2.getTransmissionNumber() == 0 && m1.getTransmissionNumber() >= 1){
 							temp = 1;
 						} else {
-							//double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
-							double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
+							double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+							//double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
 
 							if (elpased_hopcount != 0) {
 								temp = (elpased_hopcount < 0) ? -1:1;
@@ -1097,8 +1097,8 @@ public abstract class MessageRouter {
 				} else if (m2.getTransmissionNumber() == 0 && m1.getTransmissionNumber() >= 1){
 					temp2 = 1;
 				} else {
-					//double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
-					double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
+					double elpased_hopcount = m1.getTransmissionNumber() - m2.getTransmissionNumber();
+					//double elpased_hopcount = m1.getHopCount() - m2.getHopCount();
 
 					if (elpased_hopcount != 0) {
 						temp2 = (elpased_hopcount < 0) ? -1:1;
@@ -1129,6 +1129,7 @@ public abstract class MessageRouter {
 					}
 				}
 			}
+
 			/*if (temp2 == 0) {
 				if (m1.getTransmissionNumber() == 0 && m2.getTransmissionNumber() >= 1) {
 					temp2 = -1;
