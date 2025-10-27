@@ -1,0 +1,218 @@
+#
+# Default settings for the simulation
+#
+
+## Scenario settings
+Scenario.name = %%MovementModel.rngSeed%%
+Scenario.simulateConnections = true
+Scenario.updateInterval = 0.1
+# 43k ~= 12h
+Scenario.endTime = 43k
+
+btInterface.type = SimpleBroadcastInterface
+# transmit speed of 2 Mbps = 250kBps
+btInterface.transmitSpeed = 250k
+btInterface.transmitRange = 20
+
+# 全ノード用の"Wi-Fi"インターフェース
+wfInterface.type = SimpleBroadcastInterface
+# 送信速度： 10 Mbps = 1250kBps
+wfInterface.transmitSpeed = 1250k
+# 通信範囲
+wfInterface.transmitRange = 80
+
+# bluetoothとWi-Fiインターフェースを搭載
+#Group.nrofInterfaces = 2
+#Group.interface1 = btInterface
+#Group.interface2 = wfInterface
+
+
+Scenario.nrofHostGroups = 4
+
+# common settings for all groups
+Group.movementModel = ClusterMovement
+Group.router = EpidemicRouter
+Group.bufferSize = 5M
+Group.waitTime = 0, 120
+#All nodes have the firstinterface inteface
+#Group.nrofInterfaces = 1
+#Group.interface1 = firstinterface
+# walking speeds
+Group.speed = 0.5, 1.5
+#Group.msgTtl = 60
+
+Group.nrofHosts = 100
+Group.nrofApplications = 0
+
+# group1 (pedestrians) specific settings
+Group1.groupID = p
+Group1.sendQueue = 4
+Group1.nrofInterfaces = 1
+Group1.interface1 = btInterface
+
+Group2.groupID = q
+Group2.sendQueue = 4
+Group2.clusterCenter = 600, 100
+Group2.nrofInterfaces = 1
+Group2.interface1 = btInterface
+
+Group3.groupID = r
+Group3.sendQueue = 4
+Group3.clusterCenter = 350, 533
+Group3.nrofInterfaces = 1
+Group3.interface1 = btInterface
+
+# The Tram groups
+Group4.groupID = s
+Group4.sendQueue = 4
+Group4.bufferSize = 50M
+Group4.movementModel = MapRouteMovement
+Group4.routeFile = data/cluster1/kakuninnroute.wkt
+Group4.routeType = 1
+Group4.waitTime = 10, 30
+Group4.speed = 3, 5
+Group4.nrofHosts = 3
+Group4.nrofInterfaces = 2
+Group4.interface1 = btInterface
+Group4.interface2 = wfInterface
+
+#グループ5（クラスタ1の情報BOX）
+Group5.groupID = box_p
+Group5.movementModel = StationaryMovement
+Group5.nrofHosts = 1
+Group5.sendQueue = 4
+Group5.speed = 0,0
+Group5.nodeLocation = 470,1100
+Group5.buffer = 20G
+Group5.nrofInterfaces = 2
+Group5.interface1 = btInterface
+Group5.interface2 = wfInterface
+
+#グループ6（クラスタ2の情報BOX）
+Group6.groupID = box_q
+Group6.movementModel = StationaryMovement
+Group6.nrofHosts = 1
+Group6.sendQueue = 4
+Group6.speed = 0,0
+Group6.nodeLocation = 2580,180
+Group6.buffer = 20G
+Group6.nrofInterfaces = 2
+Group6.interface1 = btInterface
+Group6.interface2 = wfInterface
+
+#グループ7（クラスタ3の情報BOX）
+Group7.groupID = box_r
+Group7.movementModel = StationaryMovement
+Group7.nrofHosts = 1
+Group7.sendQueue = 4
+Group7.speed = 0,0
+Group7.nodeLocation = 3505,1265
+Group7.buffer = 20G
+Group7.nrofInterfaces = 2
+Group7.interface1 = btInterface
+Group7.interface2 = wfInterface
+
+
+## メッセージ作成パラメータ
+# イベント・ジェネレーターの数
+Events.nrof = 6
+
+## Event1: High priority Data (cluster1)
+Events1.class = MessageEventGenerator
+Events1.interval = 300
+Events1.size = 4M
+Events1.hosts = 0,100
+Events1.tohosts = 0,300
+Events1.prefix = M_Hp
+
+## Event2: High priority Data (cluster2)
+Events2.class = MessageEventGenerator
+Events2.interval = 300
+Events2.size = 4M
+Events2.hosts = 100,200
+Events2.tohosts = 0,300
+Events2.prefix = M_Hq
+
+## Event3: High priority Data (cluster3)
+Events3.class = MessageEventGenerator
+Events3.interval = 300
+Events3.size = 4M
+Events3.hosts = 200,300
+Events3.tohosts = 0,300
+Events3.prefix = M_Hr
+
+## Event4: Low priority Data (cluster1)
+Events4.class = MessageEventGenerator
+Events4.interval = 180
+Events4.size = 2M
+Events4.hosts = 0,100
+Events4.tohosts = 0,300
+Events4.prefix = M_Lp
+
+## Event5: Low priority Data (cluster2)
+Events5.class = MessageEventGenerator
+Events5.interval = 180
+Events5.size = 2M
+Events5.hosts = 100,200
+Events5.tohosts = 0,300
+Events5.prefix = M_Lq
+
+## Event6: Low priority Data (cluster3)
+Events6.class = MessageEventGenerator
+Events6.interval = 180
+Events6.size = 2M
+Events6.hosts = 200,300
+Events6.tohosts = 0,300
+Events6.prefix = M_Lr
+
+
+## Map based movement -movement model specific settings
+MapBasedMovement.nrofMapFiles = 2
+MapBasedMovement.mapFile1 = data/cluster1/kakuninnroute.wkt
+MapBasedMovement.mapFile2 = data/cluster1/kakuninn.wkt
+
+
+## Movement model settings
+# seed for movement models' pseudo random number generator (default = 0)
+MovementModel.rngSeed = [1555;47;168;462;1024;3324;4254;4623;5255;5303;5525;5778;5796;6565;6664;6814;6848;7246;7531;7706;8080;8438;8524;9209;9985;10311;14470;14971;15307;16294]
+# World's size for Movement Models without implicit size (width, height; meters)
+MovementModel.worldSize = 4500, 3400
+# How long time to move hosts in the world before real simulation
+MovementModel.warmup = 1000
+
+# ロードするレポートの数
+Report.nrofReports = 4
+# ウォームアップ期間の長さ (シミュレーション秒数)
+Report.warmup = 0
+# レポートのデフォルトディレクトリ (出力設定でレポートごとに上書き可能)
+Report.reportDir = Kondo_Hiroto/yobizikken/cluster
+
+
+# ロードするレポートクラス
+Report.report1 = CreatedMessagesReport
+Report.report2 = DeliveredMessagesReport
+Report.report3 = EventLogReport
+Report.report4 = EventLogReport_pri
+
+## Optimization settings -- these affect the speed of the simulation
+## see World class for details.
+Optimization.connectionAlg = 2
+Optimization.cellSizeMult = 5
+Optimization.randomizeUpdateOrder = true
+
+
+## GUI settings
+
+# GUI underlay image settings
+GUI.UnderlayImage.fileName = data/helsinki_underlay.png
+# Image offset in pixels (x, y)
+GUI.UnderlayImage.offset = 64, 20
+# Scaling factor for the image
+GUI.UnderlayImage.scale = 4.75
+# Image rotation (radians)
+GUI.UnderlayImage.rotate = -0.015
+
+# how many events to show in the log panel (default = 30)
+GUI.EventLogPanel.nrofEvents = 30
+# Regular Expression log filter (see Pattern-class from the Java API for RE-matching details)
+#GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$
