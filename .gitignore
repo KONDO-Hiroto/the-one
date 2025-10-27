@@ -15,3 +15,15 @@ doc/package-list
 .project
 /target/
 .settings/org.eclipse.*
+
+#result
+Kondo_Hiroto/
+data/
+morattafiles/
+hozonn-UAV/
+reports/
+experiment_settings/
+default-src-routing/
+MessageRouter_kakikae/
+MessageRouter_kakikaemae/
+setting/
