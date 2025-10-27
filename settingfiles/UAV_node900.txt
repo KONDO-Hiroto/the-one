@@ -7,7 +7,8 @@ Scenario.name = %%MovementModel.rngSeed%%
 Scenario.simulateConnections = true
 Scenario.updateInterval = 0.1
 # 43200s == 12h
-Scenario.endTime = 43200
+# 21600s == 6h
+Scenario.endTime = 21600
 
 ## インターフェース固有の設定:
 # type : インターフェイスがどのインターフェイス・クラスに属するか
@@ -80,7 +81,7 @@ Group.msgTtl = 300
 # グループp（避難者）の設定
 Group1.groupID = p
 Group1.nrofHosts = 300
-Group1.sendQueue = 4
+Group1.sendQueue = 1
 Group1.speed = 0.5,1.5
 Group1.bufferSize = 30M
 Group1.clusterCenter = 470,1100
@@ -91,7 +92,7 @@ Group1.interface1 = btInterface
 # グループq（避難者）の設定
 Group2.groupID = q
 Group2.nrofHosts = 300
-Group2.sendQueue = 4
+Group2.sendQueue = 1
 Group2.speed = 0.5,1.5
 Group2.bufferSize = 30M
 Group2.clusterCenter = 2580,180
@@ -102,7 +103,7 @@ Group2.interface1 = btInterface
 # グループr（避難者）の設定
 Group3.groupID = r
 Group3.nrofHosts = 300
-Group3.sendQueue = 4
+Group3.sendQueue = 1
 Group3.speed = 0.5,1.5
 Group3.bufferSize = 30M
 Group3.clusterCenter = 3505,1265
@@ -114,7 +115,7 @@ Group3.interface1 = btInterface
 Group4.groupID = box_p
 Group4.movementModel = StationaryMovement
 Group4.nrofHosts = 1
-Group4.sendQueue = 4
+Group4.sendQueue = 1
 Group4.speed = 0,0
 Group4.nodeLocation = 470,1100
 Group4.bufferSize = 20G
@@ -126,7 +127,7 @@ Group4.interface2 = wfInterface
 Group5.groupID = box_q
 Group5.movementModel = StationaryMovement
 Group5.nrofHosts = 1
-Group5.sendQueue = 4
+Group5.sendQueue = 1
 Group5.speed = 0,0
 Group5.nodeLocation = 2580,180
 Group5.bufferSize = 20G
@@ -138,7 +139,7 @@ Group5.interface2 = wfInterface
 Group6.groupID = box_r
 Group6.movementModel = StationaryMovement
 Group6.nrofHosts = 1
-Group6.sendQueue = 4
+Group6.sendQueue = 1
 Group6.speed = 0,0
 Group6.nodeLocation = 3505,1265
 Group6.bufferSize = 20G
@@ -148,15 +149,15 @@ Group6.interface2 = wfInterface
 
 #グループDo（ドローン）
 Group7.groupID = Do
-Group7.nrofHosts = 1
-Group7.sendQueue = 4
+Group7.nrofHosts = 3
+Group7.sendQueue = 1
 Group7.okMaps = 1
 Group7.speed = 10.0,10.0
 Group7.bufferSize = 10G
 Group7.movementModel = MapRouteMovement
 Group7.routeFile = data/cluster1/ferryroute.wkt
 Group7.routeType = 1
-Group7.waitTime = 0,0
+Group7.waitTime = 30,30
 Group7.nrofInterfaces = 1
 Group7.interface1 = wfInterface
 
@@ -214,7 +215,7 @@ Events6.prefix = M_Lr
 
 ## 運動モデルの設定
 # 運動モデルの擬似乱数ジェネレーターのシード (default = 0)
-MovementModel.rngSeed = [81;83;86;91;92;95;101;105;108;114;3;5;9;15;16;61;65;66;74;77]
+MovementModel.rngSeed = [81;83;86;91;92;95;101;105;108;114;117;123;129;137;153;182;189;199;202;206;3;5;9;15;16;61;65;66;74;77]
 # 暗黙的なサイズ(width, height; meters)がない運動モデルの世界のサイズ
 MovementModel.worldSize = 4000, 4000
 # 実際のシミュレーションの前に世界のホストを移動するのにどのくらいの時間
@@ -234,7 +235,7 @@ Report.nrofReports = 6
 # ウォームアップ期間の長さ (シミュレーション秒数)
 Report.warmup = 0
 # レポートのデフォルトディレクトリ (出力設定でレポートごとに上書き可能)
-Report.reportDir = Kondo_Hiroto/2time/sousinnkaisuuyuusenn/UAV1_node900
+Report.reportDir = Kondo_Hiroto/6h/Random/UAV3_node900_6h
 
 
 # ロードするレポートクラス
