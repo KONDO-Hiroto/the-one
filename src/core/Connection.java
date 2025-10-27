@@ -56,17 +56,16 @@ public abstract class Connection {
 
 		else{
 			this.isUp = true;
-		}
+		}*/
 	}
 	
-	public DTNHost getToName(){
+	/*public DTNHost getToName(){
 		return this.toNode;
 	}
 
 	public DTNHost getFromName() {
 		return this.fromNode;
-	}
-	*/
+	}*/
 	
 	/**
 	 * Returns true if the connection is up
