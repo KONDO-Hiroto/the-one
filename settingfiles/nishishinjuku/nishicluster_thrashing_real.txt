@@ -1,0 +1,1142 @@
+#
+# Default settings for the simulation
+#
+
+## シナリオ設定
+Scenario.name = %%MovementModel.rngSeed%%
+Scenario.simulateConnections = true
+Scenario.updateInterval = 0.1
+# 43200s == 12h
+Scenario.endTime = 21600
+
+## インターフェース固有の設定:
+# type : インターフェイスがどのインターフェイス・クラスに属するか
+# 異なるタイプの場合，サブパラメーターはインターフェースに固有である
+# For SimpleBroadcastInterface, the parameters are:
+# transmitSpeed : transmit speed of the interface (bytes per second)
+# transmitRange : range of the interface (meters)
+
+# 全ノード用の"Bluetooth"インターフェース
+btInterface.type = SimpleBroadcastInterface
+# 送信速度： 2 Mbps = 250kBps
+btInterface.transmitSpeed = 250k
+# 通信範囲
+btInterface.transmitRange = 20
+
+# 全ノード用の"Wi-Fi"インターフェース
+wfInterface.type = SimpleBroadcastInterface
+# 送信速度： 10 Mbps = 1250kBps
+wfInterface.transmitSpeed = 1250k
+# 通信範囲
+wfInterface.transmitRange = 80
+
+# bluetoothとWi-Fiインターフェースを搭載
+#Group.nrofInterfaces = 2
+#Group.interface1 = btInterface
+#Group.interface2 = wfInterface
+
+# ノードグループを定義
+Scenario.nrofHostGroups = 43
+
+## グループ固有の設定:
+# groupID : グループの識別子．ホスト名の接頭辞として使用されます
+# nrofHosts: グループ内のホスト数
+# movementModel: ホストの移動モデル（移動パッケージから有効なクラス名）
+# waitTime: 目的地に到着してから最小及び最大待機時間（秒）
+# speed: パスを移動するときの最小速度と最大速度（m/s）
+# bufferSize: メッセージバッファのサイズ (bytes)
+# router: メッセージのルーチングに使用されるルーター（ルーチングパッケージの有効なクラス名）
+# activeTimes: グループ内のノードがアクティブになっている時間間隔 (start1, end1, start2, end2, ...)
+# msgTtl : このホストグループによって作成されたメッセージのTTL（分），デフォルトは無限に設定
+
+## グループと運動モデル特有の設定
+# pois: 興味のポイントのインデックスと確率， (poiIndex1, poiProb1, poiIndex2, poiProb2, ... )
+#       shortestPathMapBasedMovementの場合
+# okMaps : どのマップノードがグループに対して適切か (map file indexes), default=all
+#          すべてのMapBasedMovent modelsの場合
+# routeFile: ルートのファイルパス - MapRouteMovement用
+# routeType: ルートの種類 - MapRouteMovement用
+
+
+# 全グループ共通の設定
+Group.movementModel = ClusterMovement
+Group.router = EpidemicRouter
+#Group.bufferSize = 5M
+Group.waitTime = 0, 120
+# 歩行速度
+#Group.speed = 0.5, 1.5
+# メッセージのTTL（分）
+# Message TTL of 300 minutes (5 hours)
+Group.msgTtl = 300
+
+#Group.nrofHosts = 40
+
+#sendQueue
+#1:RANDOM
+#2:FIFO
+#3:PROPOSAL1(priority FIFO)
+#4:PROPOSAL2(priority FIFO+hopcount queue)
+#5:HOP TIME NOPRIORITY(hopcount + elapsedtime +fifo queue)
+#6:PROPOSAL3(Proposal2 + change in importance queue)
+
+# グループ1（都庁避難者）固有の設定
+Group1.groupID = pA
+Group1.nrofHosts = 27
+Group1.activeTimes = 300,21600
+Group1.net.activeTimes = 300,21600
+Group1.sendQueue = 4
+Group1.speed = 0.5,1.5
+Group1.bufferSize = 30M
+Group1.clusterCenter = 718,889
+Group1.clusterRange = 150
+Group1.nrofInterfaces = 1
+Group1.interface1 = btInterface
+
+# グループ2（都庁避難者）固有の設定
+Group2.groupID = pB
+Group2.nrofHosts = 60
+Group2.activeTimes = 600,21600
+Group2.net.activeTimes = 600,21600
+Group2.sendQueue = 4
+Group2.speed = 0.5,1.5
+Group2.bufferSize = 30M
+Group2.clusterCenter = 718,889
+Group2.clusterRange = 150
+Group2.nrofInterfaces = 1
+Group2.interface1 = btInterface
+
+# グループ3（都庁避難者）固有の設定
+Group3.groupID = pC
+Group3.nrofHosts = 101
+Group3.activeTimes = 900,21600
+Group3.net.activeTimes = 900,21600
+Group3.sendQueue = 4
+Group3.speed = 0.5,1.5
+Group3.bufferSize = 30M
+Group3.clusterCenter = 718,889
+Group3.clusterRange = 150
+Group3.nrofInterfaces = 1
+Group3.interface1 = btInterface
+
+# グループ4（都庁避難者）固有の設定
+Group4.groupID = pD
+Group4.nrofHosts = 74
+Group4.activeTimes = 1200,21600
+Group4.net.activeTimes = 1200,21600
+Group4.sendQueue = 4
+Group4.speed = 0.5,1.5
+Group4.bufferSize = 30M
+Group4.clusterCenter = 718,889
+Group4.clusterRange = 150
+Group4.nrofInterfaces = 1
+Group4.interface1 = btInterface
+
+# グループ5（都庁避難者）固有の設定
+Group5.groupID = pE
+Group5.nrofHosts = 28
+Group5.activeTimes = 1500,21600
+Group5.net.activeTimes = 1500,21600
+Group5.sendQueue = 4
+Group5.speed = 0.5,1.5
+Group5.bufferSize = 30M
+Group5.clusterCenter = 718,889
+Group5.clusterRange = 150
+Group5.nrofInterfaces = 1
+Group5.interface1 = btInterface
+
+# グループ6（都庁避難者）固有の設定
+Group6.groupID = pF
+Group6.nrofHosts = 7
+Group6.activeTimes = 1800,21600
+Group6.net.activeTimes = 1800,21600
+Group6.sendQueue = 4
+Group6.speed = 0.5,1.5
+Group6.bufferSize = 30M
+Group6.clusterCenter = 718,889
+Group6.clusterRange = 150
+Group6.nrofInterfaces = 1
+Group6.interface1 = btInterface
+
+# グループ7（都庁避難者）固有の設定
+Group7.groupID = pG
+Group7.nrofHosts = 2
+Group7.activeTimes = 2100,21600
+Group7.net.activeTimes = 2100,21600
+Group7.sendQueue = 4
+Group7.speed = 0.5,1.5
+Group7.bufferSize = 30M
+Group7.clusterCenter = 718,889
+Group7.clusterRange = 150
+Group7.nrofInterfaces = 1
+Group7.interface1 = btInterface
+
+# グループ8（都庁避難者）固有の設定
+Group8.groupID = pH
+Group8.nrofHosts = 1
+Group8.activeTimes = 2400,21600
+Group8.net.activeTimes = 2400,21600
+Group8.sendQueue = 4
+Group8.speed = 0.5,1.5
+Group8.bufferSize = 30M
+Group8.clusterCenter = 718,889
+Group8.clusterRange = 150
+Group8.nrofInterfaces = 1
+Group8.interface1 = btInterface
+
+# グループ9（税務署避難者）固有の設定
+Group9.groupID = qA
+Group9.nrofHosts = 24
+Group9.activeTimes = 300,21600
+Group9.net.activeTimes = 300,21600
+Group9.sendQueue = 4
+Group9.speed = 0.5,1.5
+Group9.bufferSize = 30M
+Group9.clusterCenter = 1493,191
+Group9.clusterRange = 150
+Group9.nrofInterfaces = 1
+Group9.interface1 = btInterface
+
+# グループ10（税務署避難者）固有の設定
+Group10.groupID = qB
+Group10.nrofHosts = 20
+Group10.activeTimes = 600,21600
+Group10.net.activeTimes = 600,21600
+Group10.sendQueue = 4
+Group10.speed = 0.5,1.5
+Group10.bufferSize = 30M
+Group10.clusterCenter = 1493,191
+Group10.clusterRange = 150
+Group10.nrofInterfaces = 1
+Group10.interface1 = btInterface
+
+# グループ11（税務署避難者）固有の設定
+Group11.groupID = qC
+Group11.nrofHosts = 32
+Group11.activeTimes = 900,21600
+Group11.net.activeTimes = 900,21600
+Group11.sendQueue = 4
+Group11.speed = 0.5,1.5
+Group11.bufferSize = 30M
+Group11.clusterCenter = 1493,191
+Group11.clusterRange = 150
+Group11.nrofInterfaces = 1
+Group11.interface1 = btInterface
+
+# グループ12（税務署避難者）固有の設定
+Group12.groupID = qD
+Group12.nrofHosts = 44
+Group12.activeTimes = 1200,21600
+Group12.net.activeTimes = 1200,21600
+Group12.sendQueue = 4
+Group12.speed = 0.5,1.5
+Group12.bufferSize = 30M
+Group12.clusterCenter = 1493,191
+Group12.clusterRange = 150
+Group12.nrofInterfaces = 1
+Group12.interface1 = btInterface
+
+# グループ13（税務署避難者）固有の設定
+Group13.groupID = qE
+Group13.nrofHosts = 50
+Group13.activeTimes = 1500,21600
+Group13.net.activeTimes = 1500,21600
+Group13.sendQueue = 4
+Group13.speed = 0.5,1.5
+Group13.bufferSize = 30M
+Group13.clusterCenter = 1493,191
+Group13.clusterRange = 150
+Group13.nrofInterfaces = 1
+Group13.interface1 = btInterface
+
+# グループ14（税務署避難者）固有の設定
+Group14.groupID = qF
+Group14.nrofHosts = 46
+Group14.activeTimes = 1800,21600
+Group14.net.activeTimes = 1800,21600
+Group14.sendQueue = 4
+Group14.speed = 0.5,1.5
+Group14.bufferSize = 30M
+Group14.clusterCenter = 1493,191
+Group14.clusterRange = 150
+Group14.nrofInterfaces = 1
+Group14.interface1 = btInterface
+
+# グループ15（税務署避難者）固有の設定
+Group15.groupID = qG
+Group15.nrofHosts = 34
+Group15.activeTimes = 2100,21600
+Group15.net.activeTimes = 2100,21600
+Group15.sendQueue = 4
+Group15.speed = 0.5,1.5
+Group15.bufferSize = 30M
+Group15.clusterCenter = 1493,191
+Group15.clusterRange = 150
+Group15.nrofInterfaces = 1
+Group15.interface1 = btInterface
+
+# グループ16（税務署避難者）固有の設定
+Group16.groupID = qH
+Group16.nrofHosts = 22
+Group16.activeTimes = 2400,21600
+Group16.net.activeTimes = 2400,21600
+Group16.sendQueue = 4
+Group16.speed = 0.5,1.5
+Group16.bufferSize = 30M
+Group16.clusterCenter = 1493,191
+Group16.clusterRange = 150
+Group16.nrofInterfaces = 1
+Group16.interface1 = btInterface
+
+# グループ17（税務署避難者）固有の設定
+Group17.groupID = qI
+Group17.nrofHosts = 13
+Group17.activeTimes = 2700,21600
+Group17.net.activeTimes = 2700,21600
+Group17.sendQueue = 4
+Group17.speed = 0.5,1.5
+Group17.bufferSize = 30M
+Group17.clusterCenter = 1493,191
+Group17.clusterRange = 150
+Group17.nrofInterfaces = 1
+Group17.interface1 = btInterface
+
+# グループ18（税務署避難者）固有の設定
+Group18.groupID = qJ
+Group18.nrofHosts = 7
+Group18.activeTimes = 3000,21600
+Group18.net.activeTimes = 3000,21600
+Group18.sendQueue = 4
+Group18.speed = 0.5,1.5
+Group18.bufferSize = 30M
+Group18.clusterCenter = 1493,191
+Group18.clusterRange = 150
+Group18.nrofInterfaces = 1
+Group18.interface1 = btInterface
+
+# グループ19（税務署避難者）固有の設定
+Group19.groupID = qK
+Group19.nrofHosts = 3
+Group19.activeTimes = 3300,21600
+Group19.net.activeTimes = 3300,21600
+Group19.sendQueue = 4
+Group19.speed = 0.5,1.5
+Group19.bufferSize = 30M
+Group19.clusterCenter = 1493,191
+Group19.clusterRange = 150
+Group19.nrofInterfaces = 1
+Group19.interface1 = btInterface
+
+# グループ20（税務署避難者）固有の設定
+Group20.groupID = qL
+Group20.nrofHosts = 2
+Group20.activeTimes = 3600,21600
+Group20.net.activeTimes = 3600,21600
+Group20.sendQueue = 4
+Group20.speed = 0.5,1.5
+Group20.bufferSize = 30M
+Group20.clusterCenter = 1493,191
+Group20.clusterRange = 150
+Group20.nrofInterfaces = 1
+Group20.interface1 = btInterface
+
+# グループ21（税務署避難者）固有の設定
+Group21.groupID = qM
+Group21.nrofHosts = 1
+Group21.activeTimes = 3900,21600
+Group21.net.activeTimes = 3900,21600
+Group21.sendQueue = 4
+Group21.speed = 0.5,1.5
+Group21.bufferSize = 30M
+Group21.clusterCenter = 1493,191
+Group21.clusterRange = 150
+Group21.nrofInterfaces = 1
+Group21.interface1 = btInterface
+
+# グループ22（税務署避難者）固有の設定
+Group22.groupID = qN
+Group22.nrofHosts = 2
+Group22.activeTimes = 4200,21600
+Group22.net.activeTimes = 4200,21600
+Group22.sendQueue = 4
+Group22.speed = 0.5,1.5
+Group22.bufferSize = 30M
+Group22.clusterCenter = 1493,191
+Group22.clusterRange = 150
+Group22.nrofInterfaces = 1
+Group22.interface1 = btInterface
+
+# グループ23（駅避難者）固有の設定
+Group23.groupID = rA
+Group23.nrofHosts = 22
+Group23.activeTimes = 300,21600
+Group23.net.activeTimes = 300,21600
+Group23.sendQueue = 4
+Group23.speed = 0.5,1.5
+Group23.bufferSize = 30M
+Group23.clusterCenter = 1539,856
+Group23.clusterRange = 150
+Group23.nrofInterfaces = 1
+Group23.interface1 = btInterface
+
+# グループ24（駅避難者）固有の設定
+Group24.groupID = rB
+Group24.nrofHosts = 21
+Group24.activeTimes = 600,21600
+Group24.net.activeTimes = 600,21600
+Group24.sendQueue = 4
+Group24.speed = 0.5,1.5
+Group24.bufferSize = 30M
+Group24.clusterCenter = 1539,856
+Group24.clusterRange = 150
+Group24.nrofInterfaces = 1
+Group24.interface1 = btInterface
+
+# グループ25（駅避難者）固有の設定
+Group25.groupID = rC
+Group25.nrofHosts = 36
+Group25.activeTimes = 900,21600
+Group25.net.activeTimes = 900,21600
+Group25.sendQueue = 4
+Group25.speed = 0.5,1.5
+Group25.bufferSize = 30M
+Group25.clusterCenter = 1539,856
+Group25.clusterRange = 150
+Group25.nrofInterfaces = 1
+Group25.interface1 = btInterface
+
+# グループ26（駅避難者）固有の設定
+Group26.groupID = rD
+Group26.nrofHosts = 50
+Group26.activeTimes = 1200,21600
+Group26.net.activeTimes = 1200,21600
+Group26.sendQueue = 4
+Group26.speed = 0.5,1.5
+Group26.bufferSize = 30M
+Group26.clusterCenter = 1539,856
+Group26.clusterRange = 150
+Group26.nrofInterfaces = 1
+Group26.interface1 = btInterface
+
+# グループ27（駅避難者）固有の設定
+Group27.groupID = rE
+Group27.nrofHosts = 55
+Group27.activeTimes = 1500,21600
+Group27.net.activeTimes = 1500,21600
+Group27.sendQueue = 4
+Group27.speed = 0.5,1.5
+Group27.bufferSize = 30M
+Group27.clusterCenter = 1539,856
+Group27.clusterRange = 150
+Group27.nrofInterfaces = 1
+Group27.interface1 = btInterface
+
+# グループ28（駅避難者）固有の設定
+Group28.groupID = rF
+Group28.nrofHosts = 46
+Group28.activeTimes = 1800,21600
+Group28.net.activeTimes = 1800,21600
+Group28.sendQueue = 4
+Group28.speed = 0.5,1.5
+Group28.bufferSize = 30M
+Group28.clusterCenter = 1539,856
+Group28.clusterRange = 150
+Group28.nrofInterfaces = 1
+Group28.interface1 = btInterface
+
+# グループ29（駅避難者）固有の設定
+Group29.groupID = rG
+Group29.nrofHosts = 32
+Group29.activeTimes = 2100,21600
+Group29.net.activeTimes = 2100,21600
+Group29.sendQueue = 4
+Group29.speed = 0.5,1.5
+Group29.bufferSize = 30M
+Group29.clusterCenter = 1539,856
+Group29.clusterRange = 150
+Group29.nrofInterfaces = 1
+Group29.interface1 = btInterface
+
+# グループ30（駅避難者）固有の設定
+Group30.groupID = rH
+Group30.nrofHosts = 18
+Group30.activeTimes = 2400,21600
+Group30.net.activeTimes = 2400,21600
+Group30.sendQueue = 4
+Group30.speed = 0.5,1.5
+Group30.bufferSize = 30M
+Group30.clusterCenter = 1539,856
+Group30.clusterRange = 150
+Group30.nrofInterfaces = 1
+Group30.interface1 = btInterface
+
+# グループ31（駅避難者）固有の設定
+Group31.groupID = rI
+Group31.nrofHosts = 10
+Group31.activeTimes = 2700,21600
+Group31.net.activeTimes = 2700,21600
+Group31.sendQueue = 4
+Group31.speed = 0.5,1.5
+Group31.bufferSize = 30M
+Group31.clusterCenter = 1539,856
+Group31.clusterRange = 150
+Group31.nrofInterfaces = 1
+Group31.interface1 = btInterface
+
+# グループ32（駅避難者）固有の設定
+Group32.groupID = rJ
+Group32.nrofHosts = 4
+Group32.activeTimes = 3000,21600
+Group32.net.activeTimes = 3000,21600
+Group32.sendQueue = 4
+Group32.speed = 0.5,1.5
+Group32.bufferSize = 30M
+Group32.clusterCenter = 1539,856
+Group32.clusterRange = 150
+Group32.nrofInterfaces = 1
+Group32.interface1 = btInterface
+
+# グループ33（駅避難者）固有の設定
+Group33.groupID = rK
+Group33.nrofHosts = 3
+Group33.activeTimes = 3300,21600
+Group33.net.activeTimes = 3300,21600
+Group33.sendQueue = 4
+Group33.speed = 0.5,1.5
+Group33.bufferSize = 30M
+Group33.clusterCenter = 1539,856
+Group33.clusterRange = 150
+Group33.nrofInterfaces = 1
+Group33.interface1 = btInterface
+
+# グループ34（駅避難者）固有の設定
+Group34.groupID = rL
+Group34.nrofHosts = 1
+Group34.activeTimes = 3600,21600
+Group34.net.activeTimes = 3600,21600
+Group34.sendQueue = 4
+Group34.speed = 0.5,1.5
+Group34.bufferSize = 30M
+Group34.clusterCenter = 1539,856
+Group34.clusterRange = 150
+Group34.nrofInterfaces = 1
+Group34.interface1 = btInterface
+
+# グループ35（駅避難者）固有の設定
+Group35.groupID = rM
+Group35.nrofHosts = 1
+Group35.activeTimes = 3900,21600
+Group35.net.activeTimes = 3900,21600
+Group35.sendQueue = 4
+Group35.speed = 0.5,1.5
+Group35.bufferSize = 30M
+Group35.clusterCenter = 1539,856
+Group35.clusterRange = 150
+Group35.nrofInterfaces = 1
+Group35.interface1 = btInterface
+
+# グループ36（駅避難者）固有の設定
+Group36.groupID = rN
+Group36.nrofHosts = 1
+Group36.activeTimes = 4200,21600
+Group36.net.activeTimes = 4200,21600
+Group36.sendQueue = 4
+Group36.speed = 0.5,1.5
+Group36.bufferSize = 30M
+Group36.clusterCenter = 1539,856
+Group36.clusterRange = 150
+Group36.nrofInterfaces = 1
+Group36.interface1 = btInterface
+
+#グループ37（東京都庁の情報BOX）
+Group37.groupID = BOX_government(p)
+Group37.movementModel = StationaryMovement
+Group37.nrofHosts = 1
+Group37.sendQueue = 4
+Group37.speed = 0,0
+Group37.nodeLocation = 718,889
+Group37.bufferSize = 20G
+Group37.nrofInterfaces = 2
+Group37.interface1 = btInterface
+Group37.interface2 = wfInterface
+
+#グループ38（税務署の情報BOX）
+Group38.groupID = BOX_office(q)
+Group38.movementModel = StationaryMovement
+Group38.nrofHosts = 1
+Group38.sendQueue = 4
+Group38.speed = 0,0
+Group38.nodeLocation = 1493,191
+Group38.bufferSize = 20G
+Group38.nrofInterfaces = 2
+Group38.interface1 = btInterface
+Group38.interface2 = wfInterface
+
+#グループ39（新宿駅の情報BOX）
+Group39.groupID = BOX_station(r)
+Group39.movementModel = StationaryMovement
+Group39.nrofHosts = 1
+Group39.sendQueue = 4
+Group39.speed = 0,0
+Group39.nodeLocation = 1539,856
+Group39.bufferSize = 20G
+Group39.nrofInterfaces = 2
+Group39.interface1 = btInterface
+Group39.interface2 = wfInterface
+
+#グループ40（道の情報BOX）
+Group40.groupID = BOX_road1_
+Group40.movementModel = StationaryMovement
+Group40.nrofHosts = 1
+Group40.sendQueue = 4
+Group40.speed = 0,0
+Group40.nodeLocation = 421,184
+Group40.bufferSize = 20G
+Group40.nrofInterfaces = 2
+Group40.interface1 = btInterface
+Group40.interface2 = wfInterface
+
+#グループ41（道の情報BOX）
+Group41.groupID = BOX_road2_
+Group41.movementModel = StationaryMovement
+Group41.nrofHosts = 1
+Group41.sendQueue = 4
+Group41.speed = 0,0
+Group41.nodeLocation = 51,1021
+Group41.bufferSize = 20G
+Group41.nrofInterfaces = 2
+Group41.interface1 = btInterface
+Group41.interface2 = wfInterface
+
+#グループ42（道の情報BOX）
+Group42.groupID = BOX_road3_
+Group42.movementModel = StationaryMovement
+Group42.nrofHosts = 1
+Group42.sendQueue = 4
+Group42.speed = 0,0
+Group42.nodeLocation = 706,1315
+Group42.bufferSize = 20G
+Group42.nrofInterfaces = 2
+Group42.interface1 = btInterface
+Group42.interface2 = wfInterface
+
+#グループ43（避難所周回ドローン）
+Group43.groupID = Do1_
+Group43.nrofHosts = 3
+Group43.activeTimes = 300,21600
+Group43.net.activeTimes = 300,21600
+Group43.sendQueue = 4
+Group43.okMaps = 1
+Group43.speed = 10.0,10.0
+Group43.bufferSize = 10G
+Group43.movementModel = MapRouteMovement
+Group43.routeFile = data/nishishinjuku_cluster/nishishinjuku_ferryroute.wkt
+Group43.routeType = 1
+Group43.waitTime = 0,0
+Group43.nrofInterfaces = 1
+Group43.interface1 = wfInterface
+
+#グループ44（BOX周回ドローン）
+#Group44.groupID = Do2_
+#Group44.nrofHosts = 1
+#Group44.activeTimes = 300,21600
+#Group44.net.activeTimes = 300,21600
+#Group44.sendQueue = 4
+#Group44.okMaps = 1
+#Group44.speed = 10.0,10.0
+#Group44.bufferSize = 10G
+#Group44.movementModel = MapRouteMovement
+#Group44.routeFile = data/nishishinjuku_cluster/nishishinjuku_roadboxroute.wkt
+#Group44.routeType = 1
+#Group44.waitTime = 0,0
+#Group44.nrofInterfaces = 1
+#Group44.interface1 = wfInterface
+
+## メッセージ作成パラメータ
+# イベント・ジェネレーターの数
+Events.nrof = 48
+
+## Event1: High priority Data (cluster_p)
+Events1.class = MessageEventGenerator
+Events1.interval = 600
+Events1.size = 1M
+Events1.hosts = 900,901
+Events1.tohosts = 0,900
+Events1.prefix = M_Hp
+
+## Event2: High priority Data (cluster_q)
+Events2.class = MessageEventGenerator
+Events2.interval = 600
+Events2.size = 1M
+Events2.hosts = 901,902
+Events2.tohosts = 0,900
+Events2.prefix = M_Hq
+
+## Event3: High priority Data (cluster_r)
+Events3.class = MessageEventGenerator
+Events3.interval = 600
+Events3.size = 1M
+Events3.hosts = 902,903
+Events3.tohosts = 0,900
+Events3.prefix = M_Hr
+
+## Event4: High priority Data (road1)
+Events4.class = MessageEventGenerator
+Events4.interval = 600
+Events4.size = 1M
+Events4.hosts = 903,904
+Events4.tohosts = 0,900
+Events4.prefix = M_H(road1)
+
+## Event5: High priority Data (road2)
+Events5.class = MessageEventGenerator
+Events5.interval = 600
+Events5.size = 1M
+Events5.hosts = 904,905
+Events5.tohosts = 0,900
+Events5.prefix = M_H(road2)
+
+## Event6: High priority Data (road3)
+Events6.class = MessageEventGenerator
+Events6.interval = 600
+Events6.size = 1M
+Events6.hosts = 905,906
+Events6.tohosts = 0,900
+Events6.prefix = M_H(road3)
+
+## Event7: Low priority Data (cluster_p)
+Events7.class = MessageEventGenerator
+Events7.interval = 300
+Events7.time = 300,600
+Events7.size = 0.3M
+Events7.hosts = 0,27
+Events7.tohosts = 600,622
+Events7.prefix = M_Lp(1)
+
+## Event8: Low priority Data (cluster_q)
+Events8.class = MessageEventGenerator
+Events8.interval = 300
+Events8.time = 300,600
+Events8.size = 0.3M
+Events8.hosts = 300,324
+Events8.tohosts = 0,27
+Events8.prefix = M_Lq(1)
+
+## Event9: Low priority Data (cluster_r)
+Events9.class = MessageEventGenerator
+Events9.interval = 300
+Events9.time = 300,600
+Events9.size = 0.3M
+Events9.hosts = 600,622
+Events9.tohosts = 300,324
+Events9.prefix = M_Lr(1)
+
+## Event10: Low priority Data (cluster_p)
+Events10.class = MessageEventGenerator
+Events10.interval = 300
+Events10.time = 600,900
+Events10.size = 0.3M
+Events10.hosts = 0,87
+Events10.tohosts = 600,643
+Events10.prefix = M_Lp(2)
+
+## Event11: Low priority Data (cluster_q)
+Events11.class = MessageEventGenerator
+Events11.interval = 300
+Events11.time = 600,900
+Events11.size = 0.3M
+Events11.hosts = 300,344
+Events11.tohosts = 0,87
+Events11.prefix = M_Lq(2)
+
+## Event12: Low priority Data (cluster_r)
+Events12.class = MessageEventGenerator
+Events12.interval = 300
+Events12.time = 600,900
+Events12.size = 0.3M
+Events12.hosts = 600,643
+Events12.tohosts = 300,344
+Events12.prefix = M_Lr(2)
+
+## Event13: Low priority Data (cluster_p)
+Events13.class = MessageEventGenerator
+Events13.interval = 300
+Events13.time = 900,1200
+Events13.size = 0.3M
+Events13.hosts = 0,188
+Events13.tohosts = 600,679
+Events13.prefix = M_Lp(3)
+
+## Event14: Low priority Data (cluster_q)
+Events14.class = MessageEventGenerator
+Events14.interval = 300
+Events14.time = 900,1200
+Events14.size = 0.3M
+Events14.hosts = 300,376
+Events14.tohosts = 0,188
+Events14.prefix = M_Lq(3)
+
+## Event15: Low priority Data (cluster_r)
+Events15.class = MessageEventGenerator
+Events15.interval = 300
+Events15.time = 900,1200
+Events15.size = 0.3M
+Events15.hosts = 600,679
+Events15.tohosts = 300,376
+Events15.prefix = M_Lr(3)
+
+## Event16: Low priority Data (cluster_p)
+Events16.class = MessageEventGenerator
+Events16.interval = 300
+Events16.time = 1200,1500
+Events16.size = 0.3M
+Events16.hosts = 0,262
+Events16.tohosts = 600,729
+Events16.prefix = M_Lp(4)
+
+## Event17: Low priority Data (cluster_q)
+Events17.class = MessageEventGenerator
+Events17.interval = 300
+Events17.time = 1200,1500
+Events17.size = 0.3M
+Events17.hosts = 300,420
+Events17.tohosts = 0,262
+Events17.prefix = M_Lq(4)
+
+## Event18: Low priority Data (cluster_r)
+Events18.class = MessageEventGenerator
+Events18.interval = 300
+Events18.time = 1200,1500
+Events18.size = 0.3M
+Events18.hosts = 600,729
+Events18.tohosts = 300,420
+Events18.prefix = M_Lr(4)
+
+## Event19: Low priority Data (cluster_p)
+Events19.class = MessageEventGenerator
+Events19.interval = 300
+Events19.time = 1500,1800
+Events19.size = 0.3M
+Events19.hosts = 0,290
+Events19.tohosts = 600,784
+Events19.prefix = M_Lp(5)
+
+## Event20: Low priority Data (cluster_q)
+Events20.class = MessageEventGenerator
+Events20.interval = 300
+Events20.time = 1500,1800
+Events20.size = 0.3M
+Events20.hosts = 300,470
+Events20.tohosts = 0,290
+Events20.prefix = M_Lq(5)
+
+## Event21: Low priority Data (cluster_r)
+Events21.class = MessageEventGenerator
+Events21.interval = 300
+Events21.time = 1500,1800
+Events21.size = 0.3M
+Events21.hosts = 600,784
+Events21.tohosts = 300,470
+Events21.prefix = M_Lr(5)
+
+## Event22: Low priority Data (cluster_p)
+Events22.class = MessageEventGenerator
+Events22.interval = 300
+Events22.time = 1800,2100
+Events22.size = 0.3M
+Events22.hosts = 0,297
+Events22.tohosts = 600,830
+Events22.prefix = M_Lp(6)
+
+## Event23: Low priority Data (cluster_q)
+Events23.class = MessageEventGenerator
+Events23.interval = 300
+Events23.time = 1800,2100
+Events23.size = 0.3M
+Events23.hosts = 300,516
+Events23.tohosts = 0,297
+Events23.prefix = M_Lq(6)
+
+## Event24: Low priority Data (cluster_r)
+Events24.class = MessageEventGenerator
+Events24.interval = 300
+Events24.time = 1800,2100
+Events24.size = 0.3M
+Events24.hosts = 600,830
+Events24.tohosts = 300,516
+Events24.prefix = M_Lr(6)
+
+## Event25: Low priority Data (cluster_p)
+Events25.class = MessageEventGenerator
+Events25.interval = 300
+Events25.time = 2100,2400
+Events25.size = 0.3M
+Events25.hosts = 0,299
+Events25.tohosts = 600,862
+Events25.prefix = M_Lp(7)
+
+## Event26: Low priority Data (cluster_q)
+Events26.class = MessageEventGenerator
+Events26.interval = 300
+Events26.time = 2100,2400
+Events26.size = 0.3M
+Events26.hosts = 300,550
+Events26.tohosts = 0,299
+Events26.prefix = M_Lq(7)
+
+## Event27: Low priority Data (cluster_r)
+Events27.class = MessageEventGenerator
+Events27.interval = 300
+Events27.time = 2100,2400
+Events27.size = 0.3M
+Events27.hosts = 600,862
+Events27.tohosts = 300,550
+Events27.prefix = M_Lr(7)
+
+## Event28: Low priority Data (cluster_p)
+Events28.class = MessageEventGenerator
+Events28.interval = 300
+Events28.time = 2400,2700
+Events28.size = 0.3M
+Events28.hosts = 0,300
+Events28.tohosts = 600,880
+Events28.prefix = M_Lp(8)
+
+## Event29: Low priority Data (cluster_q)
+Events29.class = MessageEventGenerator
+Events29.interval = 300
+Events29.time = 2400,2700
+Events29.size = 0.3M
+Events29.hosts = 300,572
+Events29.tohosts = 0,300
+Events29.prefix = M_Lq(8)
+
+## Event30: Low priority Data (cluster_r)
+Events30.class = MessageEventGenerator
+Events30.interval = 300
+Events30.time = 2400,2700
+Events30.size = 0.3M
+Events30.hosts = 600,880
+Events30.tohosts = 300,572
+Events30.prefix = M_Lr(8)
+
+## Event31: Low priority Data (cluster_p)
+Events31.class = MessageEventGenerator
+Events31.interval = 300
+Events31.time = 2700,3000
+Events31.size = 0.3M
+Events31.hosts = 0,300
+Events31.tohosts = 600,890
+Events31.prefix = M_Lp(9)
+
+## Event32: Low priority Data (cluster_q)
+Events32.class = MessageEventGenerator
+Events32.interval = 300
+Events32.time = 2700,3000
+Events32.size = 0.3M
+Events32.hosts = 300,585
+Events32.tohosts = 0,300
+Events32.prefix = M_Lq(9)
+
+## Event33: Low priority Data (cluster_r)
+Events33.class = MessageEventGenerator
+Events33.interval = 300
+Events33.time = 2700,3000
+Events33.size = 0.3M
+Events33.hosts = 600,890
+Events33.tohosts = 300,585
+Events33.prefix = M_Lr(9)
+
+## Event34: Low priority Data (cluster_p)
+Events34.class = MessageEventGenerator
+Events34.interval = 300
+Events34.time = 3000,3300
+Events34.size = 0.3M
+Events34.hosts = 0,300
+Events34.tohosts = 600,894
+Events34.prefix = M_Lp(10)
+
+## Event35: Low priority Data (cluster_q)
+Events35.class = MessageEventGenerator
+Events35.interval = 300
+Events35.time = 3000,3300
+Events35.size = 0.3M
+Events35.hosts = 300,592
+Events35.tohosts = 0,300
+Events35.prefix = M_Lq(10)
+
+## Event36: Low priority Data (cluster_r)
+Events36.class = MessageEventGenerator
+Events36.interval = 300
+Events36.time = 3000,3300
+Events36.size = 0.3M
+Events36.hosts = 600,894
+Events36.tohosts = 300,592
+Events36.prefix = M_Lr(10)
+
+## Event37: Low priority Data (cluster_p)
+Events37.class = MessageEventGenerator
+Events37.interval = 300
+Events37.time = 3300,3600
+Events37.size = 0.3M
+Events37.hosts = 0,300
+Events37.tohosts = 600,897
+Events37.prefix = M_Lp(11)
+
+## Event38: Low priority Data (cluster_q)
+Events38.class = MessageEventGenerator
+Events38.interval = 300
+Events38.time = 3300,3600
+Events38.size = 0.3M
+Events38.hosts = 300,595
+Events38.tohosts = 0,300
+Events38.prefix = M_Lq(11)
+
+## Event39: Low priority Data (cluster_r)
+Events39.class = MessageEventGenerator
+Events39.interval = 300
+Events39.time = 3300,3600
+Events39.size = 0.3M
+Events39.hosts = 600,897
+Events39.tohosts = 300,595
+Events39.prefix = M_Lr(11)
+
+## Event40: Low priority Data (cluster_p)
+Events40.class = MessageEventGenerator
+Events40.interval = 300
+Events40.time = 3600,3900
+Events40.size = 0.3M
+Events40.hosts = 0,300
+Events40.tohosts = 600,898
+Events40.prefix = M_Lp(12)
+
+## Event41: Low priority Data (cluster_q)
+Events41.class = MessageEventGenerator
+Events41.interval = 300
+Events41.time = 3600,3900
+Events41.size = 0.3M
+Events41.hosts = 300,597
+Events41.tohosts = 0,300
+Events41.prefix = M_Lq(12)
+
+## Event42: Low priority Data (cluster_r)
+Events42.class = MessageEventGenerator
+Events42.interval = 300
+Events42.time = 3600,3900
+Events42.size = 0.3M
+Events42.hosts = 600,898
+Events42.tohosts = 300,597
+Events42.prefix = M_Lr(12)
+
+## Event43: Low priority Data (cluster_p)
+Events43.class = MessageEventGenerator
+Events43.interval = 300
+Events43.time = 3900,4200
+Events43.size = 0.3M
+Events43.hosts = 0,300
+Events43.tohosts = 600,899
+Events43.prefix = M_Lp(13)
+
+## Event44: Low priority Data (cluster_q)
+Events44.class = MessageEventGenerator
+Events44.interval = 300
+Events44.time = 3900,4200
+Events44.size = 0.3M
+Events44.hosts = 300,598
+Events44.tohosts = 0,300
+Events44.prefix = M_Lq(13)
+
+## Event45: Low priority Data (cluster_r)
+Events45.class = MessageEventGenerator
+Events45.interval = 300
+Events45.time = 3900,4200
+Events45.size = 0.3M
+Events45.hosts = 600,899
+Events45.tohosts = 300,598
+Events45.prefix = M_Lr(13)
+
+## Event46: Low priority Data (cluster_p)
+Events46.class = MessageEventGenerator
+Events46.interval = 300
+Events46.time = 4200,21600
+Events46.size = 0.3M
+Events46.hosts = 0,300
+Events46.tohosts = 600,900
+Events46.prefix = M_Lp(14)
+
+## Event47: Low priority Data (cluster_q)
+Events47.class = MessageEventGenerator
+Events47.interval = 300
+Events47.time = 4200,21600
+Events47.size = 0.3M
+Events47.hosts = 300,600
+Events47.tohosts = 0,300
+Events47.prefix = M_Lq(14)
+
+## Event48: Low priority Data (cluster_r)
+Events48.class = MessageEventGenerator
+Events48.interval = 300
+Events48.time = 4200,21600
+Events48.size = 0.3M
+Events48.hosts = 600,900
+Events48.tohosts = 300,600
+Events48.prefix = M_Lr(14)
+
+## 運動モデルの設定
+# 運動モデルの擬似乱数ジェネレーターのシード (default = 0)
+MovementModel.rngSeed = [258;293;357;377;394;416;452;478;522;565;1422;2598;7600;1758;5715;4562;6971;9344;7183;9901;98;119;159;164;169;174;184;192;206;209;34;37;45;47;48;55;60;64;71;73;77;82;84;92;100;104;106;115;121;128;137;142]
+# 暗黙的なサイズ(width, height; meters)がない運動モデルの世界のサイズ
+MovementModel.worldSize = 5000, 5000
+# 実際のシミュレーションの前に世界のホストを移動するのにどのくらいの時間
+MovementModel.warmup = 0
+
+## 地図に基づく移動 -運動モデルの固有の設定
+MapBasedMovement.nrofMapFiles = 3
+
+MapBasedMovement.mapFile1 = data/nishishinjuku1_naosi.wkt
+MapBasedMovement.mapFile2 = data/nishishinjuku_cluster/nishishinjuku_ferryroute.wkt
+MapBasedMovement.mapFile3 = data/nishishinjuku_cluster/nishishinjuku_roadboxroute.wkt
+
+## Reports - すべてのレポート名は有効なレポートクラスでなければならない
+# ロードするレポートの数
+Report.nrofReports = 6
+# ウォームアップ期間の長さ (シミュレーション秒数)
+Report.warmup = 0
+# レポートのデフォルトディレクトリ (出力設定でレポートごとに上書き可能)
+Report.reportDir = Kondo_Hiroto/thrashing_real_hinannBOXonly_do3
+
+
+# ロードするレポートクラス
+Report.report1 = CreatedMessagesReport
+Report.report2 = DeliveredMessagesReport
+Report.report3 = EventLogReport_pri
+Report.report4 = EventLogReport
+Report.report5 = MessageStatsReport
+Report.report6 = BufferOccupancyReport
+
+
+## 一部のルータ設定のデフォルト設定
+ProphetRouter.secondsInTimeUnit = 30
+SprayAndWaitRouter.nrofCopies = 6
+SprayAndWaitRouter.binaryMode = true
+
+## 最適化設定 -- これらはシミュレーションの速度に影響します
+## 詳細はWorld classを参照してください
+Optimization.cellSizeMult = 5
+Optimization.randomizeUpdateOrder = true
+
+
+## GUIの設定
+
+# GUIアンダーレイ画像設定
+GUI.UnderlayImage.fileName = data/helsinki_underlay.png
+# ピクセル単位の画像オフセット (x, y)
+GUI.UnderlayImage.offset = 64, 20
+# 画像の拡大縮小率
+GUI.UnderlayImage.scale = 4.75
+# 画像回転 (ラジアン)
+GUI.UnderlayImage.rotate = -0.015
+
+# ログパネルに表示するイベント数 (default = 30)
+GUI.EventLogPanel.nrofEvents = 100
+# 正規表現ログフィルタ (REマッチングの詳細については，Java APIのパターンクラスを参照)
+#GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$

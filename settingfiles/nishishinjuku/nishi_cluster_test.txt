@@ -1,0 +1,421 @@
+#
+# Default settings for the simulation
+#
+
+## シナリオ設定
+Scenario.name = %%MovementModel.rngSeed%%
+Scenario.simulateConnections = true
+Scenario.updateInterval = 0.1
+# 43200s == 12h
+Scenario.endTime = 21600
+
+## インターフェース固有の設定:
+# type : インターフェイスがどのインターフェイス・クラスに属するか
+# 異なるタイプの場合，サブパラメーターはインターフェースに固有である
+# For SimpleBroadcastInterface, the parameters are:
+# transmitSpeed : transmit speed of the interface (bytes per second)
+# transmitRange : range of the interface (meters)
+
+# 全ノード用の"Bluetooth"インターフェース
+btInterface.type = SimpleBroadcastInterface
+# 送信速度： 2 Mbps(bit/sec) = 250kBps(Byte/sec)
+btInterface.transmitSpeed = 250k
+# 通信範囲
+btInterface.transmitRange = 20
+
+# 全ノード用の"Wi-Fi"インターフェース
+wfInterface.type = SimpleBroadcastInterface
+# 送信速度： 10 Mbps(bit/sec) = 1250kBps(Byte/sec)
+wfInterface.transmitSpeed = 1250k
+# 通信範囲
+wfInterface.transmitRange = 80
+
+# bluetoothとWi-Fiインターフェースを搭載
+#Group.nrofInterfaces = 2
+#Group.interface1 = btInterface
+#Group.interface2 = wfInterface
+
+# ノードグループを定義
+Scenario.nrofHostGroups = 13
+
+## グループ固有の設定:
+# groupID : グループの識別子．ホスト名の接頭辞として使用されます
+# nrofHosts: グループ内のホスト数
+# movementModel: ホストの移動モデル（移動パッケージから有効なクラス名）
+# waitTime: 目的地に到着してから最小及び最大待機時間（秒）
+# speed: パスを移動するときの最小速度と最大速度（m/s）
+# bufferSize: メッセージバッファのサイズ (bytes)
+# router: メッセージのルーチングに使用されるルーター（ルーチングパッケージの有効なクラス名）
+# activeTimes: グループ内のノードがアクティブになっている時間間隔 (start1, end1, start2, end2, ...)
+# msgTtl : このホストグループによって作成されたメッセージのTTL（分），デフォルトは無限に設定
+
+## グループと運動モデル特有の設定
+# pois: 興味のポイントのインデックスと確率， (poiIndex1, poiProb1, poiIndex2, poiProb2, ... )
+#       shortestPathMapBasedMovementの場合
+# okMaps : どのマップノードがグループに対して適切か (map file indexes), default=all
+#          すべてのMapBasedMovent modelsの場合
+# routeFile: ルートのファイルパス - MapRouteMovement用
+# routeType: ルートの種類 - MapRouteMovement用
+
+
+# 全グループ共通の設定
+Group.movementModel = ClusterMovement
+Group.router = EpidemicRouter
+#Group.bufferSize = 5M
+Group.waitTime = 0, 120
+# 歩行速度
+#Group.speed = 0.5, 1.5
+# メッセージのTTL（分）
+# Message TTL of 300 minutes (5 hours)
+Group.msgTtl = 300
+
+#sendQueue
+#1:RANDOM
+#2:FIFO
+#3:PROPOSAL1(priority FIFO)
+#4:PROPOSAL2(priority FIFO+hopcount queue)
+#5:HOP TIME NOPRIORITY(hopcount + elapsedtime +fifo queue)
+#6:PROPOSAL3(Proposal2 + change in importance queue)
+
+# グループ1（歩行者）固有の設定
+Group1.groupID = pA
+Group1.nrofHosts = 15
+Group1.activeTimes = 0, 21600
+Group1.sendQueue = 4
+Group1.speed = 0.5,1.5
+Group1.bufferSize = 30M
+Group1.clusterCenter = 718,889
+Group1.clusterRange = 200
+Group1.nrofInterfaces = 1
+Group1.interface1 = btInterface
+
+# グループ4（歩行者）固有の設定
+Group2.groupID = pB
+Group2.nrofHosts = 15
+Group2.activeTimes = 3600, 21600
+Group2.net.activeTimes = 3600, 21600
+Group2.sendQueue = 4
+Group2.speed = 0.5,1.5
+Group2.bufferSize = 30M
+Group2.clusterCenter = 718,889
+Group2.clusterRange = 200
+Group2.nrofInterfaces = 1
+Group2.interface1 = btInterface
+
+# グループ2（歩行者）固有の設定
+Group3.groupID = qA
+Group3.nrofHosts = 15
+Group3.activeTimes = 0, 21600
+Group3.sendQueue = 4
+Group3.speed = 0.5,1.5
+Group3.bufferSize = 30M
+Group3.clusterCenter = 1493,191
+Group3.clusterRange = 200
+Group3.nrofInterfaces = 1
+Group3.interface1 = btInterface
+
+# グループ5（歩行者）固有の設定
+Group4.groupID = qB
+Group4.nrofHosts = 15
+Group4.activeTimes = 3600, 21600
+Group4.net.activeTimes = 3600, 21600
+Group4.sendQueue = 4
+Group4.speed = 0.5,1.5
+Group4.bufferSize = 30M
+Group4.clusterCenter = 1493,191
+Group4.clusterRange = 200
+Group4.nrofInterfaces = 1
+Group4.interface1 = btInterface
+
+# グループ3（歩行者）固有の設定
+Group5.groupID = rA
+Group5.nrofHosts = 15
+Group5.activeTimes = 0, 21600
+Group5.sendQueue = 4
+Group5.speed = 0.5,1.5
+Group5.bufferSize = 30M
+Group5.clusterCenter = 1539,856
+Group5.clusterRange = 200
+Group5.nrofInterfaces = 1
+Group5.interface1 = btInterface
+
+# グループ6（歩行者）固有の設定
+Group6.groupID = rB
+Group6.nrofHosts = 15
+Group6.activeTimes = 3600, 21600
+Group6.net.activeTimes = 3600, 21600
+Group6.sendQueue = 4
+Group6.speed = 0.5,1.5
+Group6.bufferSize = 30M
+Group6.clusterCenter = 1539,856
+Group6.clusterRange = 200
+Group6.nrofInterfaces = 1
+Group6.interface1 = btInterface
+
+#グループ7（東京都庁の情報BOX）
+Group7.groupID = BOX_government(p)
+Group7.movementModel = StationaryMovement
+Group7.nrofHosts = 1
+Group7.sendQueue = 4
+Group7.speed = 0,0
+Group7.nodeLocation = 718,889
+Group7.bufferSize = 20G
+Group7.nrofInterfaces = 2
+Group7.interface1 = btInterface
+Group7.interface2 = wfInterface
+
+#グループ8（税務署の情報BOX）
+Group8.groupID = BOX_office(q)
+Group8.movementModel = StationaryMovement
+Group8.nrofHosts = 1
+Group8.sendQueue = 4
+Group8.speed = 0,0
+Group8.nodeLocation = 1493,191
+Group8.bufferSize = 20G
+Group8.nrofInterfaces = 2
+Group8.interface1 = btInterface
+Group8.interface2 = wfInterface
+
+#グループ7（新宿駅の情報BOX）
+Group9.groupID = BOX_station(r)
+Group9.movementModel = StationaryMovement
+Group9.nrofHosts = 1
+Group9.sendQueue = 4
+Group9.speed = 0,0
+Group9.nodeLocation = 1539,856
+Group9.bufferSize = 20G
+Group9.nrofInterfaces = 2
+Group9.interface1 = btInterface
+Group9.interface2 = wfInterface
+
+#グループ7（道の情報BOX）
+Group10.groupID = BOX_road1_
+Group10.movementModel = StationaryMovement
+Group10.nrofHosts = 1
+Group10.sendQueue = 4
+Group10.speed = 0,0
+Group10.nodeLocation = 421,184
+Group10.bufferSize = 20G
+Group10.nrofInterfaces = 2
+Group10.interface1 = btInterface
+Group10.interface2 = wfInterface
+
+#グループ7（道の情報BOX）
+Group11.groupID = BOX_road2_
+Group11.movementModel = StationaryMovement
+Group11.nrofHosts = 1
+Group11.sendQueue = 4
+Group11.speed = 0,0
+Group11.nodeLocation = 51,1021
+Group11.bufferSize = 20G
+Group11.nrofInterfaces = 2
+Group11.interface1 = btInterface
+Group11.interface2 = wfInterface
+
+#グループ7（道の情報BOX）
+Group12.groupID = BOX_road3_
+Group12.movementModel = StationaryMovement
+Group12.nrofHosts = 1
+Group12.sendQueue = 4
+Group12.speed = 0,0
+Group12.nodeLocation = 706,1315
+Group12.bufferSize = 20G
+Group12.nrofInterfaces = 2
+Group12.interface1 = btInterface
+Group12.interface2 = wfInterface
+
+#グループ19（ドローン）
+Group13.groupID = UAV1
+Group13.nrofHosts = 1
+Group13.sendQueue = 4
+Group13.okMaps = 1
+Group13.speed = 1.0,1.0
+Group13.bufferSize = 10G
+Group13.movementModel = MapRouteMovement
+Group13.routeFile = data/nishishinjuku_cluster/nishishinjuku_ferryroute.wkt
+Group13.routeType = 1
+Group13.waitTime = 0,0
+Group13.nrofInterfaces = 1
+Group13.interface1 = wfInterface
+
+#グループ19（ドローン）
+#Group14.groupID = UAV2
+#Group14.nrofHosts = 1
+#Group14.sendQueue = 4
+#Group14.okMaps = 1
+#Group14.speed = 1.0,1.0
+#Group14.bufferSize = 10G
+#Group14.movementModel = MapRouteMovement
+#Group14.routeFile = data/nishishinjuku_cluster/nishishinjuku_roadboxroute.wkt
+#Group14.routeType = 1
+#Group14.waitTime = 0,0
+#Group14.nrofInterfaces = 1
+#Group14.interface1 = wfInterface
+
+## メッセージ作成パラメータ
+# イベント・ジェネレーターの数
+Events.nrof = 12
+
+## Event1: High priority Data (cluster1)
+Events1.class = MessageEventGenerator
+Events1.interval = 600
+Events1.size = 1M
+Events1.hosts = 90,91
+Events1.tohosts = 0,90
+Events1.prefix = M_Hp
+
+## Event2: High priority Data (cluster2)
+Events2.class = MessageEventGenerator
+Events2.interval = 600
+Events2.size = 1M
+Events2.hosts = 91,92
+Events2.tohosts = 0,90
+Events2.prefix = M_Hq
+
+## Event3: High priority Data (cluster3)
+Events3.class = MessageEventGenerator
+Events3.interval = 600
+Events3.size = 1M
+Events3.hosts = 92,93
+Events3.tohosts = 0,90
+Events3.prefix = M_Hr
+
+## Event4: High priority Data (cluster1)
+Events4.class = MessageEventGenerator
+Events4.interval = 600
+Events4.size = 1M
+Events4.hosts = 93,94
+Events4.tohosts = 0,90
+Events4.prefix = M_H(road1)
+
+## Event5: High priority Data (cluster2)
+Events5.class = MessageEventGenerator
+Events5.interval = 600
+Events5.size = 1M
+Events5.hosts = 94,95
+Events5.tohosts = 0,90
+Events5.prefix = M_H(road2)
+
+## Event3: High priority Data (cluster3)
+Events6.class = MessageEventGenerator
+Events6.interval = 600
+Events6.size = 1M
+Events6.hosts = 95,96
+Events6.tohosts = 0,90
+Events6.prefix = M_H(road3)
+
+## Event4: Low priority Data (cluster1)
+Events7.class = MessageEventGenerator
+Events7.interval = 300
+Events7.time = 0, 3600
+Events7.size = 0.3M
+Events7.hosts = 0,15
+Events7.tohosts = 60,75
+Events7.prefix = M_Lp(1)
+
+## Event5: Low priority Data (cluster2)
+Events8.class = MessageEventGenerator
+Events8.interval = 300
+Events8.time = 0, 3600
+Events8.size = 0.3M
+Events8.hosts = 30,45
+Events8.tohosts = 0,15
+Events8.prefix = M_Lq(1)
+
+## Event6: Low priority Data (cluster3)
+Events9.class = MessageEventGenerator
+Events9.interval = 300
+Events9.time = 0, 3600
+Events9.size = 0.3M
+Events9.hosts = 60,75
+Events9.tohosts = 30,45
+Events9.prefix = M_Lr(1)
+
+## Event4: Low priority Data (cluster1)
+Events10.class = MessageEventGenerator
+Events10.interval = 300
+Events10.time = 3600, 21600
+Events10.size = 0.3M
+Events10.hosts = 0,30
+Events10.tohosts = 60,90
+Events10.prefix = M_Lp(2)
+
+## Event5: Low priority Data (cluster2)
+Events11.class = MessageEventGenerator
+Events11.interval = 300
+Events11.time = 3600, 21600
+Events11.size = 0.3M
+Events11.hosts = 30,60
+Events11.tohosts = 0,30
+Events11.prefix = M_Lq(2)
+
+## Event6: Low priority Data (cluster3)
+Events12.class = MessageEventGenerator
+Events12.interval = 300
+Events12.time = 3600, 21600
+Events12.size = 0.3M
+Events12.hosts = 60,90
+Events12.tohosts = 30,60
+Events12.prefix = M_Lr(2)
+
+## 運動モデルの設定
+# 運動モデルの擬似乱数ジェネレーターのシード (default = 0)
+MovementModel.rngSeed = [67;81;83;86;91;92;95;101;105;3;5;9;15;16;61;65;66;74;75;76]
+# 暗黙的なサイズ(width, height; meters)がない運動モデルの世界のサイズ
+MovementModel.worldSize = 5000, 5000
+# 実際のシミュレーションの前に世界のホストを移動するのにどのくらいの時間
+MovementModel.warmup = 1000
+
+## 地図に基づく移動 -運動モデルの固有の設定
+MapBasedMovement.nrofMapFiles = 3
+
+MapBasedMovement.mapFile1 = data/nishishinjuku1_naosi.wkt
+MapBasedMovement.mapFile2 = data/nishishinjuku_cluster/nishishinjuku_ferryroute.wkt
+MapBasedMovement.mapFile3 = data/nishishinjuku_cluster/nishishinjuku_roadboxroute.wkt
+
+## Reports - すべてのレポート名は有効なレポートクラスでなければならない
+
+
+# ロードするレポートの数
+Report.nrofReports = 6
+# ウォームアップ期間の長さ (シミュレーション秒数)
+Report.warmup = 0
+# レポートのデフォルトディレクトリ (出力設定でレポートごとに上書き可能)
+Report.reportDir = Kondo_Hiroto/thrashing/kakuritutest
+
+
+# ロードするレポートクラス
+Report.report1 = CreatedMessagesReport
+Report.report2 = DeliveredMessagesReport
+Report.report3 = EventLogReport_pri
+Report.report4 = EventLogReport
+Report.report5 = MessageStatsReport
+Report.report6 = BufferOccupancyReport
+
+
+## 一部のルータ設定のデフォルト設定
+ProphetRouter.secondsInTimeUnit = 30
+SprayAndWaitRouter.nrofCopies = 6
+SprayAndWaitRouter.binaryMode = true
+
+## 最適化設定 -- これらはシミュレーションの速度に影響します
+## 詳細はWorld classを参照してください
+Optimization.cellSizeMult = 5
+Optimization.randomizeUpdateOrder = true
+
+
+## GUIの設定
+
+# GUIアンダーレイ画像設定
+GUI.UnderlayImage.fileName = data/helsinki_underlay.png
+# ピクセル単位の画像オフセット (x, y)
+GUI.UnderlayImage.offset = 64, 20
+# 画像の拡大縮小率
+GUI.UnderlayImage.scale = 4.75
+# 画像回転 (ラジアン)
+GUI.UnderlayImage.rotate = -0.015
+
+# ログパネルに表示するイベント数 (default = 30)
+GUI.EventLogPanel.nrofEvents = 100
+# 正規表現ログフィルタ (REマッチングの詳細については，Java APIのパターンクラスを参照)
+#GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$
