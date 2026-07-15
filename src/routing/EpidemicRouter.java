@@ -38,8 +38,10 @@ public class EpidemicRouter extends ActiveRouter {
 			return; // transferring, don't try other connections yet
 		}
 
-		// Try first the messages that can be delivered to final recipient
-		if (exchangeDeliverableMessages() != null) {
+		/* Keep THE ONE's original direct-delivery priority for RANDOM and the
+		 * other ordinary queue modes. PROPOSAL_2 must instead pass every
+		 * candidate through its SV/probability filtering path. */
+		if (!isMatocQueueMode() && exchangeDeliverableMessages() != null) {
 			return; // started a transfer, don't try others (yet)
 		}
 

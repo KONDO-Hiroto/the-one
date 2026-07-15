@@ -92,6 +92,11 @@ public abstract class MessageRouter {
 	public static final int DENIED_LOW_RESOURCES = -4;
 	/** Receive return value for a node low on some resource(s) */
 	public static final int DENIED_POLICY = -5;
+
+	//7/13 add
+	/** Transmission was skipped by probability control */
+	public static final int DENIED_PROBABILITY = -6;
+
 	/** Receive return value for unspecified reason */
 	public static final int DENIED_UNSPECIFIED = -99;
 	/** Maximum Ttl value */
@@ -240,6 +245,13 @@ public abstract class MessageRouter {
 		return this.messages.containsKey(id);
 	}
 
+	//7/14 add
+	public boolean hasSeenMessage(Message m) {
+		return this.messages.containsKey(m.getId()) ||
+		   this.deliveredMessages.containsKey(m.getId()) ||
+		   this.blacklistedMessages.containsKey(m.getId());
+	}
+
 	/**
 	 * Returns true if a full message with same ID as the given message has been
 	 * received by this host as the <strong>final</strong> recipient
@@ -357,6 +369,9 @@ public abstract class MessageRouter {
 	 */
 	public int receiveMessage(Message m, DTNHost from) {
 		Message newMessage = m.replicate();
+
+		//7/13 add
+		newMessage.increasesTransmissionNumber();
 
 		this.putToIncomingBuffer(newMessage, from);
 		newMessage.addNodeOnPath(this.host);
@@ -536,6 +551,36 @@ public abstract class MessageRouter {
 		}
 	}
 
+	//7\13 add
+	protected boolean isUavBoxConnection(Connection con) {
+		if (con == null) {
+		return false;
+		}
+
+		DTNHost thisHost = getHost();
+		DTNHost otherHost = con.getOtherNode(thisHost);
+
+		String thisName = thisHost.toString();
+		String otherName = otherHost.toString();
+
+		boolean thisIsUav = thisName.startsWith("UAV");
+		boolean otherIsUav = otherName.startsWith("UAV");
+
+		boolean thisIsBox = thisName.startsWith("BOX");
+		boolean otherIsBox = otherName.startsWith("BOX");
+
+		return (thisIsUav && otherIsBox) || (thisIsBox && otherIsUav);
+	}
+
+	/**protected int getEffectiveTransmissionProbability(Message m, Connection con) {
+		if (isUavBoxConnection(con)) {
+			return 100;
+		}
+
+		return m.getTransmissonProbability();
+	}
+	*/
+
 	/**
 	 * Sorts/shuffles the given list according to the current sending queue
 	 * mode. The list can contain either Message or Tuple<Message, Connection>
@@ -545,6 +590,11 @@ public abstract class MessageRouter {
 	 */
 	
 	int record_counter = 0;
+
+	//7/14 add
+	protected boolean isMatocQueueMode() {
+		return this.sendQueueMode == Q_MODE_PROPOSAL_2;
+	}
 
 	@SuppressWarnings(value = "unchecked") /* ugly way to make this generic */
 	protected List sortByQueueMode(List list) {
@@ -638,6 +688,10 @@ public abstract class MessageRouter {
 					double diff;
 					int temp = 0;
 					Message m1, m2;
+					
+					//7/13 add
+					//Connection con1 = null;
+					//Connection con2 = null;
 
 					/*if (o1 instanceof Tuple) {
 						m1 = ((Tuple<Message, Connection>)o1).getKey();
@@ -653,11 +707,19 @@ public abstract class MessageRouter {
 					} else {
 						throw new SimError("Invalid type of objects in the list (o2)");
 					}*/
-					if (o1 instanceof Tuple) {
-					m1 = ((Tuple<Message, Connection>)o1).getKey();
-					m2 = ((Tuple<Message, Connection>)o2).getKey();
+
+					//7/13 add
+					if (o1 instanceof Tuple && o2 instanceof Tuple) {
+					Tuple<Message, Connection> t1 = (Tuple<Message, Connection>)o1;
+					Tuple<Message, Connection> t2 = (Tuple<Message, Connection>)o2;
+
+					m1 = t1.getKey();
+					m2 = t2.getKey();
+
+					//con1 = t1.getValue();
+					//con2 = t2.getValue();
 					}
-					else if (o1 instanceof Message) {
+					else if (o1 instanceof Message && o2 instanceof Message) {
 						m1 = (Message)o1;
 						m2 = (Message)o2;
 					}
@@ -707,6 +769,18 @@ public abstract class MessageRouter {
 						temp = 1;
 						//System.out.println("M_Lr " + m1 +"," + m2);
 					}
+
+					//7/13 add
+					/** 
+					if (temp == 0) {
+						int p1 = getEffectiveTransmissionProbability(m1, con1);
+						int p2 = getEffectiveTransmissionProbability(m2, con2);
+
+						if (p1 != p2) {
+							temp = (p1 > p2) ? -1 : 1;
+						}
+					}
+					*/
 
 					//keikazikannyuusenn
 					/*if (temp == 0) {

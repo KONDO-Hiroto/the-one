@@ -9,6 +9,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+//7/14 add
+import java.util.HashMap;
+import java.util.Map;
 
 import routing.util.EnergyModel;
 import routing.util.MessageTransferAcceptPolicy;
@@ -49,6 +52,12 @@ public abstract class ActiveRouter extends MessageRouter {
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
 
+	//7/14 add
+	private Map<Connection, Map<String, Boolean>> svRequestDecisions;
+	private Map<Connection, Map<String, Boolean>> probabilityDecisions;
+	//7/15 add
+	private Random probabilityRng;
+
 	/**
 	 * Constructor. Creates a new message router based on the settings in
 	 * the given Settings object.
@@ -84,6 +93,17 @@ public abstract class ActiveRouter extends MessageRouter {
 		super.init(host, mListeners);
 		this.sendingConnections = new ArrayList<Connection>(1);
 		this.lastTtlCheck = 0;
+
+		//7/14 add
+		this.svRequestDecisions = new HashMap<Connection, Map<String, Boolean>>();
+		this.probabilityDecisions = new HashMap<Connection, Map<String, Boolean>>();
+
+		//7/15 add
+		Settings movementSettings = new Settings("MovementModel");
+		int baseSeed = movementSettings.getInt("rngSeed", 0);
+		long probabilitySeed = ((long)baseSeed << 32) ^
+			(host.getAddress() & 0xffffffffL);
+		this.probabilityRng = new Random(probabilitySeed);
 	}
 
 	/**
@@ -97,6 +117,12 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (this.energy != null && con.isUp() && !con.isInitiator(getHost())) {
 			this.energy.reduceDiscoveryEnergy();
 		}
+
+		//7/14 add
+		if (!con.isUp()) {
+			this.svRequestDecisions.remove(con);
+			this.probabilityDecisions.remove(con);
+		}
 	}
 
 	@Override
@@ -106,8 +132,59 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		DTNHost other = con.getOtherNode(getHost());
+
+		/* Keep the original THE ONE delivery path for all ordinary queue
+		 * modes. PROPOSAL_2 alone performs the SV/probability filtering below. */
+		if (!isMatocQueueMode()) {
+			ArrayList<Message> messages =
+				new ArrayList<Message>(this.getMessageCollection());
+
+			for (Message m : messages) {
+				if (other == m.getTo() && startTransfer(m, con) == RCV_OK) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		//7/13 add
+		List<Tuple<Message, Connection>> tuples = new ArrayList<Tuple<Message, Connection>>();
+
+		for (Message m : this.getMessageCollection()) {
+			if (other != m.getTo()) {
+				continue;
+			}
+
+			if (!updateProbabilityByImplicitSv(m, con)) {
+				continue;
+			}
+
+			if (!passesTransmissionProbability(m, con)) {
+				continue;
+			}
+
+			tuples.add(new Tuple<Message, Connection>(m, con));
+		}
+
+		this.sortByQueueMode(tuples);
+		for (Tuple<Message, Connection> tuple : tuples) {
+			Message m = tuple.getKey();
+			int retVal = startTransfer(m, con);
+			if (retVal == RCV_OK) {
+				return true;
+			}
+			else if (retVal > 0) {
+				return false;
+			}
+		}
+
+		return false;
+	}
 		/* do a copy to avoid concurrent modification exceptions
 		 * (startTransfer may remove messages) */
+		//7/13 change
+		/**
 		ArrayList<Message> temp =
 			new ArrayList<Message>(this.getMessageCollection());
 		for (Message m : temp) {
@@ -115,13 +192,13 @@ public abstract class ActiveRouter extends MessageRouter {
 				if (startTransfer(m, con) == RCV_OK) {
 					/*if (con.getFromName().toString().startsWith("s")) {
 						continue;
-					}*/
+					}
 					return true;
 				}
 			}
 		}
 		return false;
-	}
+	}*/
 
 	@Override
 	public boolean createNewMessage(Message m) {
@@ -169,6 +246,78 @@ public abstract class ActiveRouter extends MessageRouter {
 		return getHost().getConnections();
 	}
 
+	//7/14 add
+	private boolean updateProbabilityByImplicitSv(Message m, Connection con) {
+		Map<String, Boolean> requests = this.svRequestDecisions.get(con);
+
+		if (requests == null) {
+			requests = new HashMap<String, Boolean>();
+			this.svRequestDecisions.put(con, requests);
+		}
+
+		Boolean oldRequest = requests.get(m.getId());
+
+		if (oldRequest != null) {
+			return oldRequest.booleanValue();
+		}
+
+		DTNHost other = con.getOtherNode(getHost());
+		boolean requested = !other.getRouter().hasSeenMessage(m);
+		requests.put(m.getId(), Boolean.valueOf(requested));
+
+		/* UAV-BOX still uses the normal SV result, but its transmission
+		 * probability is neither increased nor halved. */
+		if (isUavBoxConnection(con)) {
+			return requested;
+		}
+
+		if (requested) {
+
+			if (m.getTransmissonProbability() < 100) {
+				m.increaseTransmissionProbability(40);
+
+				if (m.getTransmissonProbability() > 100) {
+					m.probabilityMaximize();
+				}
+			}
+		}
+
+		else {
+			m.halveTransmissonProbability();
+		}
+
+		return requested;
+	}
+
+	//7/14 add
+	private boolean passesTransmissionProbability(Message m, Connection con) {
+		/* Probability 1.0 (100%): no draw is needed for UAV-BOX. */
+		if (isUavBoxConnection(con)) {
+			return true;
+		}
+
+		 Map<String, Boolean> decisions = this.probabilityDecisions.get(con);
+
+		 if (decisions == null) {
+			decisions = new HashMap<String, Boolean>();
+			this.probabilityDecisions.put(con, decisions);
+		 }
+
+		 Boolean oldDecision = decisions.get(m.getId());
+		 if (oldDecision != null) {
+			return oldDecision.booleanValue();
+		 }
+
+		 //7/15 add
+		 int dice = this.probabilityRng.nextInt(100) + 1;
+
+		 boolean accepted = dice <= m.getTransmissonProbability();
+
+		 decisions.put(m.getId(), Boolean.valueOf(accepted));
+
+		 return accepted;
+	}
+
 	/**
 	 * Tries to start a transfer of message using a connection. Is starting
 	 * succeeds, the connection is added to the watch list of active connections
@@ -179,16 +328,36 @@ public abstract class ActiveRouter extends MessageRouter {
 	 */
 	protected int startTransfer(Message m, Connection con) {
 		int retVal;
-		int retVal2 = 0;
 
 		if (!con.isReadyForTransfer()) {
 			return TRY_LATER_BUSY;
 		}
 
-		if (!policy.acceptSending(getHost(),
-				con.getOtherNode(getHost()), con, m)) {
+		if (!policy.acceptSending(getHost(), con.getOtherNode(getHost()), con, m)) {
 			return MessageRouter.DENIED_POLICY;
 		}
+
+
+		//7/13 add
+		/**
+		boolean uavBox = isUavBoxConnection(con);
+
+		if (!uavBox) {
+			if (m.getTransmissonProbability() != 100) {
+				m.increaseTransmissionProbability(40);
+
+				if (m.getTransmissonProbability() > 100) {
+					m.probabilityMaximize();
+				}
+			}
+
+			int dice = (int)(Math.random() * 100) + 1;
+
+			if (dice > m.getTransmissonProbability()) {
+				return MessageRouter.DENIED_PROBABILITY;
+			}
+		}*/
+
 		retVal = con.startTransfer(getHost(), m);
 		//System.out.println("connection: " + con + "messages" + m);
 		//System.out.println("from: " + con.getToName() + ", to: " + con.getFromName());
@@ -206,12 +375,18 @@ public abstract class ActiveRouter extends MessageRouter {
 				//System.out.println("from: " + con.getToName());
 				//System.out.println("to: " + con.getFromName());
 				//System.out.println("messages" + m + "\n");
+
+				//7/13 add
+				/**
+				if (!uavBox) {
 				m.halveTransmissonProbability();
-			}
-			else if (deleteDelivered && retVal == DENIED_OLD &&
-			m.getTo() == con.getOtherNode(this.getHost())) {
-			/* final recipient has already received the msg -> delete it */
-			this.deleteMessage(m.getId(), false);
+				}
+				*/
+
+				if (deleteDelivered && m.getTo() == con.getOtherNode(getHost())) {
+					/* final recipient has already received the msg -> delete it */
+					this.deleteMessage(m.getId(), false);
+				}
 			}
 
 		return retVal;
@@ -470,18 +645,93 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return The connections that started a transfer or null if no connection
 	 * accepted a message.
 	 */
+	//7/13 add
 	protected Connection tryMessagesToConnections(List<Message> messages,
 			List<Connection> connections) {
-		for (int i=0, n=connections.size(); i<n; i++) {
+				if (!isMatocQueueMode()) {
+					for (Connection con : connections) {
+						Message started = tryAllMessages(con, messages);
+
+						if (started != null) {
+							return con;
+						}
+					}
+
+					return null;
+				}
+
+				for (Connection con : connections) {
+					List<Tuple<Message, Connection>> tuples = new ArrayList<Tuple<Message, Connection>>();
+
+					for (Message m : messages) {
+						boolean requested = updateProbabilityByImplicitSv(m, con);
+
+						if (!requested) {
+							continue;
+						}
+
+						if (!passesTransmissionProbability(m, con)) {
+							continue;
+						}
+
+						tuples.add(new Tuple<Message, Connection>(m, con));
+					}
+
+					this.sortByQueueMode(tuples);
+
+					List<Message> sortedMessages = new ArrayList<Message>();
+
+					for (Tuple<Message, Connection> tuple : tuples) {
+						sortedMessages.add(tuple.getKey());
+					}
+
+					Message started = tryAllMessages(con, sortedMessages);
+
+					if (started != null) {
+						return con;
+					}
+				}
+
+				return null;
+			}
+		/**
+		for (int i = 0; i < connections.size(); i++) {
 			Connection con = connections.get(i);
-			Message started = tryAllMessages(con, messages);
+
+			List<Tuple<Message, Connection>> tuples =
+			    new ArrayList<Tuple<Message, Connection>>();
+
+			for (Message m : messages) {
+
+				//7/14 add
+				boolean requested = updateProbabilityByImplicitSv(m, con);
+
+				if (!requested) {
+					continue;
+				}
+
+				if (!passesTransmissionProbability(m, con)) {
+					continue;
+				}
+
+				tuples.add(new Tuple<Message, Connection>(m, con));
+			}
+
+			this.sortByQueueMode(tuples);
+			List<Message> sortedMessages = new ArrayList<Message>();
+
+			for (Tuple<Message, Connection> tuple : tuples) {
+				sortedMessages.add(tuple.getKey());
+			}
+
+			Message started = tryAllMessages(con, sortedMessages);
 			if (started != null) {
 				return con;
 			}
 		}
 
 		return null;
-	}
+	}*/
 
 	/**
 	 * Tries to send all messages that this router is carrying to all
@@ -499,7 +749,13 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		List<Message> messages =
 			new ArrayList<Message>(this.getMessageCollection());
-		this.sortByQueueMode(messages);
+
+		/* Preserve the original queue behavior (including RANDOM) for every
+		 * mode except PROPOSAL_2. PROPOSAL_2 must be sorted only after the
+		 * per-connection SV and probability filters have been applied. */
+		if (!isMatocQueueMode()) {
+			this.sortByQueueMode(messages);
+		}
 
 		//System.out.println(messages);
 		return tryMessagesToConnections(messages, connections);
@@ -560,17 +816,25 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @param con The connection to add
 	 */
 	protected void addToSendingConnections(Connection con, Message m) {
+		//7/13 add
+		m.increasesTransmissionNumber();
+		this.sendingConnections.add(con);
+	}
+		/** 7/13 change
 		int probability = (int)(Math.random()*100 + 1);	//dice(1-100)
+		*/
 		
 		/**
 		 * The transmission probability is determined.
 		 */
+		/**
 		if (m.getTransmissonProbability() != 100) {
 			m.increaseTransmissionProbability(40);	//Increase transmission probability by 40%
 			if (m.getTransmissonProbability() > 100) {
 				m.probabilityMaximize();
 			}
 		}
+		*/
 
 		/**
 		 * Determine the transmission.
@@ -581,7 +845,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		//System.out.println("probability:" + probability);
 		//System.out.println("con:" + con);
 		//System.out.println("before: sousinkakuritu " + m.getTransmissonProbability() + "sousinkaisuu: " + m.getTransmissionNumber());
-		if (probability <= m.getTransmissonProbability()) {
+		/**if (probability <= m.getTransmissonProbability()) {
 			m.increasesTransmissionNumber();
 			this.sendingConnections.add(con);
 		}
@@ -594,7 +858,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	//	this.sendingConnections.add(con);
 		//System.out.println();
 		//System.out.println(con);
-	}
+	}*/
 
 	/**
 	 * Returns true if this router is transferring something at the moment or
@@ -726,7 +990,21 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * Subclasses that are interested of the event may want to override this.
 	 * @param con The connection whose transfer was finalized
 	 */
-	protected void transferDone(Connection con) { }
+	protected void transferDone(Connection con) {
+
+		//7/14 add
+		Message m = con.getMessage();
+
+		if (m == null) {
+			return;
+		}
+
+		Map<String, Boolean> requests = this.svRequestDecisions.get(con);
+
+		if (requests != null) {
+			requests.put(m.getId(), Boolean.FALSE);
+		}
+	 }
 
 	@Override
 	public RoutingInfo getRoutingInfo() {

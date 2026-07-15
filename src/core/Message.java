@@ -340,6 +340,13 @@ public class Message implements Comparable<Message> {
 		this.requestMsg  = m.requestMsg;
 		this.initTtl = m.initTtl;
 		this.appID = m.appID;
+		//7/13 add
+		this.init_transmission_probability = 
+		    m.init_transmission_probability;
+		this.transmission_probability = 
+		    m.transmission_probability;
+		this.transmissionNumber =
+			m.transmissionNumber;
 
 		if (m.properties != null) {
 			Set<String> keys = m.properties.keySet();
